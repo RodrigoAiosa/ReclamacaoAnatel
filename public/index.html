@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reclamações Anatel — Indicadores de Qualidade de Atendimento</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--ink:#1c2533;--mut:#667085;--line:#e4e7ec;--brand:#1f5eff}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.45 system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:#0f1b3d;color:#fff;padding:18px 28px}
+header h1{margin:0;font-size:20px} header p{margin:4px 0 0;color:#b8c3e0;font-size:13px}
+main{max-width:1300px;margin:0 auto;padding:20px 28px 40px}
+#aviso{display:none;background:#fff4e5;border:1px solid #f5b64a;color:#7a4b00;padding:10px 14px;border-radius:8px;margin-bottom:16px}
+.filtros{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+.filtros label{display:flex;flex-direction:column;font-size:12px;color:var(--mut);gap:4px}
+select,input{padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;min-width:170px;font:inherit}
+select[multiple]{min-height:84px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.kpi b{display:block;font-size:26px;margin-top:4px} .kpi span{color:var(--mut);font-size:12px}
+.grid{display:grid;grid-template-columns:2fr 1fr;gap:14px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+h2{font-size:14px;margin:0 0 10px} canvas{max-height:340px}
+footer{color:var(--mut);font-size:12px;margin-top:20px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Reclamações Anatel — Indicadores de Qualidade de Atendimento</h1>
+  <p>Fonte: Anatel Consumidor via dados.gov.br · <span id="atualizado">carregando…</span></p>
+</header>
+<main>
+  <div id="aviso"></div>
+  <div class="filtros">
+    <label>Indicador<select id="fInd"></select></label>
+    <label>Serviço<select id="fSer" multiple></select></label>
+    <label>Prestadora<select id="fPre" multiple></select></label>
+    <label>De<select id="fDe"></select></label>
+    <label>Até<select id="fAte"></select></label>
+  </div>
+  <div class="kpis">
+    <div class="card kpi"><span>Registros</span><b id="kReg">–</b></div>
+    <div class="card kpi"><span>Prestadoras</span><b id="kPre">–</b></div>
+    <div class="card kpi"><span>Valor médio (indicador)</span><b id="kMed">–</b></div>
+    <div class="card kpi"><span>Último período</span><b id="kUlt">–</b></div>
+  </div>
+  <div class="grid">
+    <div class="card"><h2>Evolução mensal</h2><canvas id="cSerie"></canvas></div>
+    <div class="card"><h2>Ranking por prestadora</h2><canvas id="cRank"></canvas></div>
+  </div>
+  <footer>Dados atualizados automaticamente a cada 2 dias. Licença da base: Creative Commons Attribution (Anatel).</footer>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const fmt = v => v == null ? "–" : Number(v).toLocaleString("pt-BR", {maximumFractionDigits: 2});
+let opcoes = null, charts = {};
+
+function params() {
+  const q = new URLSearchParams();
+  const multi = (el, k) => [...el.selectedOptions].forEach(o => q.append(k, o.value));
+  multi($("fSer"), "servico"); multi($("fPre"), "prestadora");
+  if ($("fDe").value) q.set("de", $("fDe").value);
+  if ($("fAte").value) q.set("ate", $("fAte").value);
+  return q;
+}
+
+function preencher(el, itens, vazio) {
+  el.innerHTML = (vazio ? `<option value="">${vazio}</option>` : "") +
+    itens.map(i => `<option value="${i}">${i}</option>`).join("");
+}
+
+function desenhar(id, cfg) {
+  charts[id]?.destroy();
+  charts[id] = new Chart($(id), cfg);
+}
+
+async function carregar() {
+  const r = await fetch("/api/dados?" + params());
+  const d = await r.json();
+  if (d.erro) { $("aviso").style.display = "block"; $("aviso").textContent = "Erro: " + d.erro; return; }
+
+  if (!opcoes) {
+    opcoes = d.opcoes;
+    preencher($("fInd"), opcoes.indicadores);
+    preencher($("fSer"), opcoes.servicos);
+    preencher($("fPre"), opcoes.prestadoras);
+    preencher($("fDe"), opcoes.periodos, "Início");
+    preencher($("fAte"), opcoes.periodos, "Fim");
+  }
+  $("atualizado").textContent = "atualizado em " +
+    new Date(d.meta.atualizado_em).toLocaleString("pt-BR");
+  if (d.meta.amostra) {
+    $("aviso").style.display = "block";
+    $("aviso").textContent = "Atenção: exibindo dados SINTÉTICOS de demonstração. Configure DATA_URL para carregar os dados reais da Anatel.";
+  }
+
+  const ind = $("fInd").value || Object.keys(d.serie)[0];
+  const serie = d.serie[ind] || [], rank = d.ranking[ind] || [];
+  $("kReg").textContent = fmt(d.kpis.registros);
+  $("kPre").textContent = fmt(d.kpis.prestadoras);
+  $("kMed").textContent = fmt(serie.length ? serie.reduce((a, x) => a + x.valor, 0) / serie.length : null);
+  $("kUlt").textContent = serie.length ? serie[serie.length - 1].periodo : "–";
+
+  desenhar("cSerie", {type: "line",
+    data: {labels: serie.map(s => s.periodo),
+           datasets: [{label: ind, data: serie.map(s => s.valor), borderColor: "#1f5eff",
+                       backgroundColor: "#1f5eff22", fill: true, tension: .25}]},
+    options: {plugins: {legend: {display: false}}}});
+  desenhar("cRank", {type: "bar",
+    data: {labels: rank.map(s => s.prestadora),
+           datasets: [{data: rank.map(s => s.valor), backgroundColor: "#1f5eff"}]},
+    options: {indexAxis: "y", plugins: {legend: {display: false}}}});
+}
+
+["fInd", "fSer", "fPre", "fDe", "fAte"].forEach(id => $(id).addEventListener("change", carregar));
+carregar().catch(e => { $("aviso").style.display = "block"; $("aviso").textContent = "Falha ao carregar: " + e; });
+</script>
+</body>
+</html>

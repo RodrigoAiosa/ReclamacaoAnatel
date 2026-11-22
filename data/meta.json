@@ -1,0 +1,14 @@
+{
+  "atualizado_em": "2026-11-22T20:51:52+00:00",
+  "origem": "dados sintéticos (demonstração)",
+  "amostra": true,
+  "linhas": 816,
+  "sha256": "sample",
+  "colunas": [
+    "periodo",
+    "prestadora",
+    "servico",
+    "indicador",
+    "valor"
+  ]
+}
