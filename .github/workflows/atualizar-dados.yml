@@ -2,6 +2,7 @@ name: Atualizar dados (verificação diária)
 
 on:
   schedule:
+    - cron: "9 14 23 11 *"   # TESTE pontual: 23/11 às 11:09 (Brasília) = 14:09 UTC — remover depois do teste
     - cron: "43 6 * * *"   # todo dia às 06:43 UTC (03:43 em Brasília); se o arquivo da Anatel não mudou, só registra no log
   workflow_dispatch:
   push:
