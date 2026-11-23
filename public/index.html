@@ -143,7 +143,8 @@ footer{font-size:11px;color:#4f6c5e;margin:10px 4px 0;text-align:center}
 .op.on{border-color:var(--verde);background:#e4efe8;box-shadow:0 0 0 2px #1f6b4633}
 .op:focus-visible{outline:3px solid var(--verde);outline-offset:2px}
 .op .ic{position:relative;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;overflow:hidden;color:#fff;font-weight:700;font-size:13px;flex:0 0 auto}
-.op .ic img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:4px;background:#fff}
+.op .ic img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff}
+.op .ic:has(img){border-radius:8px}
 .op .ic svg{width:16px;height:16px;fill:#fff}
 </style>
 </head>
@@ -529,12 +530,14 @@ function renderMetodologia() {
 /* ---------- filtro rápido: principais operadoras (com ícone) ---------- */
 const slugOp = n => n.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const nomeOp = n => n.length <= 3 ? n : n.toLowerCase().replace(/(^|\s)\S/g, c => c.toUpperCase());
+const OPS_ICONE = ["CLARO", "VIVO", "TIM"];   // operadoras com ícone oficial em public/operadoras/
+const EXT_ICONE = ["webp", "svg", "png"];
 function montarOps() {
-  const lista = D.opcoes.principais || [];
+  const lista = (D.opcoes.principais || []).filter(n => OPS_ICONE.includes(n));
   $("ops").innerHTML = `<button type="button" class="op" data-op="" title="Mostrar todas as operadoras"><span class="ic" style="background:#2e7d4f"><svg viewBox="0 0 24 24"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z"/></svg></span>Todas</button>` +
     lista.map((n, i) => { const sl = slugOp(n);
       return `<button type="button" class="op" data-op="${n}" title="Filtrar por ${nomeOp(n)}"><span class="ic" style="background:${PAL[i % PAL.length]}">${nomeOp(n)[0]}` +
-        `<img src="operadoras/${sl}.svg" alt="" onerror="if(!this.dataset.t){this.dataset.t=1;this.src='operadoras/${sl}.png'}else{this.remove()}"></span>${nomeOp(n)}</button>`; }).join("");
+        `<img src="operadoras/${sl}.${EXT_ICONE[0]}" alt="" data-i="0" onerror="const i=+this.dataset.i+1; if(i<${EXT_ICONE.length}){this.dataset.i=i;this.src='operadoras/${sl}.'+${JSON.stringify(EXT_ICONE).replace(/"/g, "'")}[i]}else{this.remove()}"></span>${nomeOp(n)}</button>`; }).join("");
   $("ops").addEventListener("click", e => { const b = e.target.closest(".op"); if (!b) return;
     const v = b.dataset.op; $("fPre").value = (v && $("fPre").value === v) ? "" : v; carregar(); });
 }
