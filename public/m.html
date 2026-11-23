@@ -398,6 +398,7 @@ function ir(v) {
   view = v; document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === "v_" + v));
   document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
   $("ops").style.display = v === "sobre" ? "none" : "flex";
+  $("bFil").style.display = v === "sobre" ? "none" : "flex";   // "Sobre" não usa filtros
   window.scrollTo(0, 0); requestAnimationFrame(() => { Object.values(charts).forEach(c => c.resize()); if (v === "regional") desenharMapa(); });
   if (location.hash !== "#" + v) history.replaceState(null, "", "#" + v);
 }
