@@ -146,6 +146,8 @@ footer{font-size:11px;color:#4f6c5e;margin:10px 4px 0;text-align:center}
 .op .ic img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff}
 .op .ic:has(img){border-radius:8px}
 .op .ic svg{width:16px;height:16px;fill:#fff}
+.moldura.sem-filtros{grid-template-columns:1fr}
+.moldura.sem-filtros aside,.moldura.sem-filtros .kpis,.moldura.sem-filtros #ops{display:none}
 </style>
 </head>
 <body>
@@ -236,10 +238,10 @@ footer{font-size:11px;color:#4f6c5e;margin:10px 4px 0;text-align:center}
       <div class="pane" id="p_metodologia">
         <div class="meto">
           <div class="card"><h2>Glossário</h2><div class="sub">Termos usados neste painel</div><dl id="glossario"></dl></div>
-          <div class="card"><h2>Como cada indicador é calculado</h2><div class="sub">Com exemplo numérico usando os filtros atuais da barra lateral</div><dl id="formulas"></dl></div>
+          <div class="card"><h2>Como cada indicador é calculado</h2><div class="sub">Com exemplo numérico calculado sobre toda a base de dados</div><dl id="formulas"></dl></div>
         </div>
         <div class="g g2">
-          <div class="card"><h2>Distribuição das Notas</h2><div class="sub">Quantas avaliações receberam cada nota (1 a 5) no filtro atual</div><div class="cv"><canvas id="cNota"></canvas></div></div>
+          <div class="card"><h2>Distribuição das Notas</h2><div class="sub">Quantas avaliações receberam cada nota (1 a 5) em toda a base</div><div class="cv"><canvas id="cNota"></canvas></div></div>
           <div class="card"><h2>Níveis de Satisfação</h2><div class="sub">Regra aplicada em ordem, a cada operadora, serviço ou UF</div><div class="niv" id="niveis"></div></div>
         </div>
         <div class="meto">
@@ -475,8 +477,8 @@ function renderServicos() {
 }
 
 /* ---------- aba Metodologia ---------- */
-function renderMetodologia() {
-  const k = D.kpis, s = D.sat, m = D.meta, aval = k.resolvidas + k.nao_resolvidas;
+function renderMetodologia(X) {
+  const k = X.kpis, s = X.sat, m = X.meta, aval = k.resolvidas + k.nao_resolvidas;
   const ex = t => `<span class="ex">${t}</span>`;
   $("glossario").innerHTML = [
     ["Reclamação", "Demanda registrada pelo consumidor contra uma prestadora, na data de abertura (<i>Data Abertura</i>)."],
@@ -497,7 +499,7 @@ function renderMetodologia() {
     ["% insatisfeitos", "(notas 1 + 2) ÷ avaliações", `${pc(s.insatisfeitos)}`],
     ["Saldo (p.p.)", "% satisfeitos − % insatisfeitos", `${pc(s.satisfeitos)} − ${pc(s.insatisfeitos)} = ${s.saldo == null ? "–" : num(s.saldo, 1)} p.p.`],
     ["TMR", "média dos dias de resposta (só respondidas)", `${num(k.tmr, 1)} dias`]
-  ].map(([t, f, e]) => `<dt>${t}</dt><dd><code>${f}</code><br>Exemplo agora: ${ex(e)}</dd>`).join("");
+  ].map(([t, f, e]) => `<dt>${t}</dt><dd><code>${f}</code><br>Exemplo com toda a base: ${ex(e)}</dd>`).join("");
   $("niveis").innerHTML = [
     ["Sem dados", "Nenhuma avaliação no recorte."], ["Crítico", "Saldo negativo: há mais insatisfeitos que satisfeitos."],
     ["Atenção", "Insatisfeitos de 20% ou mais, mesmo com saldo positivo."], ["Excelente", "Saldo de 50 p.p. ou mais."], ["Bom", "Os demais casos."]
@@ -505,7 +507,7 @@ function renderMetodologia() {
   $("fonte").innerHTML = [
     ["Origem", `Anatel · Painéis de dados abertos · Consumidor — Indicadores de Qualidade de Atendimento (Licença Creative Commons Attribution)`],
     ["Registros processados", `${num(m.registros_origem)} (período ${m.periodo[0]} a ${m.periodo[1]})`],
-    ["Última data de abertura", D.ultima_data ? D.ultima_data.split("-").reverse().join("/") : "–"],
+    ["Última data de abertura", X.ultima_data ? X.ultima_data.split("-").reverse().join("/") : "–"],
     ["Dados processados em", new Date(m.atualizado_em).toLocaleString("pt-BR")],
     ["Fonte verificada em", new Date(m.verificado_em).toLocaleString("pt-BR")],
     ["Frequência", "Verificação automática diária (GitHub Actions, 03:43 em Brasília); a Anatel atualiza a base a cada ~2 dias e, se há dados novos, o painel é republicado sozinho. Cada verificação fica registrada no log de atualizações."]
@@ -513,7 +515,7 @@ function renderMetodologia() {
   $("limites").innerHTML = [
     "A nota e o % de resolvidas vêm só de quem avaliou o atendimento; o número de avaliações é menor que o de reclamações.",
     "Reclamação é diferente de cliente: operadoras com mais clientes tendem a ter mais reclamações. Compare também os percentuais, não só o volume.",
-    "Os filtros valem para toda a página, com exceções: o filtro de UF não se aplica aos gráficos de assuntos nem ao detalhe diário; as comparações entre serviços ignoram o filtro de Serviço; o mapa de calor ignora o filtro de Operadora.",
+    "Nas demais abas, os filtros valem para toda a página, com exceções: o filtro de UF não se aplica aos gráficos de assuntos nem ao detalhe diário; as comparações entre serviços ignoram o filtro de Serviço; o mapa de calor ignora o filtro de Operadora.",
     "As operadoras mostradas são as 20 de maior volume; as demais entram nos totais, mas não nos rankings.",
     "Dados da fonte podem ser corrigidos pela Anatel depois da publicação, e o último mês costuma estar incompleto."
   ].map(t => `<li>${t}</li>`).join("");
@@ -522,7 +524,7 @@ function renderMetodologia() {
     data: {labels: d.map(x => `${x.nota} · ${x.label}`), datasets: [{data: d.map(x => x.n), backgroundColor: d.map(x => COR[x.label]), borderRadius: 2, barPercentage: .62}]},
     options: {maintainAspectRatio: false, layout: {padding: {top: 22}},
       plugins: {legend: {display: false}, tooltip: dsExterno(i => { const x = d[i], papel = x.nota >= 4 ? "satisfeitos" : x.nota <= 2 ? "insatisfeitos" : "nenhum dos dois (neutra)";
-        return tipKV(`Nota ${x.nota} — ${x.label}`, `${num(s.avaliacoes)} avaliações no recorte`, [["Avaliações", num(x.n)], ["% do total", pc(x.pct)]], `Conta para: <b>${papel}</b>.`); })},
+        return tipKV(`Nota ${x.nota} — ${x.label}`, `${num(s.avaliacoes)} avaliações na base`, [["Avaliações", num(x.n)], ["% do total", pc(x.pct)]], `Conta para: <b>${papel}</b>.`); })},
       scales: {x: {grid: {display: false}, border: {display: false}, ticks: {color: "#222", font: {size: 12}, maxRotation: 0, callback: function (v) { return this.getLabelForValue(v).split(" · "); }}}, y: {display: false, beginAtZero: true}}}});
 }
 
@@ -543,6 +545,12 @@ function montarOps() {
 }
 const marcarOps = () => document.querySelectorAll("#ops .op").forEach(b => { const on = b.dataset.op === $("fPre").value; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
 
+
+let DM = null;   // base completa, sem filtros — a aba Metodologia não usa a barra lateral
+async function abrirMetodologia() {
+  try { if (!DM) DM = await (await fetch("/api/dados")).json(); if (DM.erro) throw new Error(DM.erro); renderMetodologia(DM); }
+  catch (e) { $("aviso").style.display = "block"; $("aviso").textContent = "Falha ao carregar a Metodologia: " + e.message; }
+}
 /* ---------- renderização ---------- */
 function painelSatisfacao(s) {
   const d = Object.fromEntries(s.dist.map(x => [x.nota, x]));
@@ -581,7 +589,7 @@ function render() {
   $("tOp").innerHTML = `<thead><tr><th>Operadora</th><th>Reclamações</th><th>% respondidas</th><th>% resolvidas</th><th>TMR (dias)</th><th>Nota média</th><th>Satisfeitos</th><th>Insatisfeitos</th></tr></thead><tbody>` +
     D.operadoras.map((r, i) => `<tr data-i="${i}"><td>${r.nome}</td><td>${num(r.total)}</td><td>${pc(r.pct_respondidas)}</td><td>${pc(r.pct_resolvidas)}</td><td>${num(r.tmr, 1)}</td><td>${num(r.sat.nota, 2)}</td><td class="pos">${pc(r.sat.satisfeitos, 0)}</td><td class="neg">${pc(r.sat.insatisfeitos, 0)}</td></tr>`).join("") + "</tbody>";
 
-  renderServicos(); renderMetodologia();
+  renderServicos();
   const m = D.meta;
   $("rodape").textContent = `${num(m.registros_origem)} registros de origem · ${m.periodo[0]} a ${m.periodo[1]} · dados processados em ${new Date(m.atualizado_em).toLocaleString("pt-BR")} · fonte verificada em ${new Date(m.verificado_em).toLocaleString("pt-BR")} · verificação automática diária · Licença: Creative Commons Attribution (Anatel)`;
 }
@@ -632,7 +640,8 @@ addEventListener("hashchange", rota); rota();
 document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
   document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === t));
   document.querySelectorAll(".pane").forEach(p => p.classList.toggle("on", p.id === "p_" + t.dataset.t));
-  esconderTip(); Object.values(charts).forEach(c => c.resize()); if (t.dataset.t === "regional") desenharMapa();
+  document.querySelector(".moldura").classList.toggle("sem-filtros", t.dataset.t === "metodologia");
+  esconderTip(); Object.values(charts).forEach(c => c.resize()); if (t.dataset.t === "regional") desenharMapa(); if (t.dataset.t === "metodologia") abrirMetodologia();
 }));
 carregar().catch(e => { $("aviso").style.display = "block"; $("aviso").textContent = "Falha ao carregar: " + e; });
 </script>
