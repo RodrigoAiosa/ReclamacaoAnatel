@@ -77,12 +77,55 @@ def resumo(v):
     return {"total": int(dem), "respondidas": int(resp), "nao_respondidas": int(dem - resp),
             "resolvidas": int(resol), "nao_resolvidas": int(aval - resol), "reabertas": int(v[5]),
             "pct_respondidas": _div(resp, dem, 100), "pct_resolvidas": _div(resol, aval, 100),
+            "pct_reabertas": _div(v[5], resp, 100),
             "tmr": _div(v[9], v[8], 1, 1)}
 
 
 def _soma(acc, row):
     for i in range(NM):
         acc[i] += row[4 + i]
+
+
+def _bloco_servicos(A, B, ano, mes, pr, uf, sv, base, no_ano, no_mes, z):
+    """Dados da aba Serviços e Assuntos. As comparações entre serviços ignoram o filtro de serviço
+    (senão só sobraria uma barra); o mapa operadora × assunto ignora o filtro de operadora."""
+    por_sv, serie_sv = defaultdict(z), defaultdict(lambda: defaultdict(float))
+    for r in A:
+        if (pr and r[2] != pr) or (uf and r[3] != uf) or not no_ano(r):
+            continue
+        serie_sv[r[1]][r[0]] += r[4]
+        if no_mes(r):
+            _soma(por_sv[r[1]], r)
+    lista = [{"nome": k, "total": int(v[0]), "sat": sat(v), **resumo(v)}
+             for k, v in sorted(por_sv.items(), key=lambda x: -x[1][0]) if v[0]]
+    nomes = [x["nome"] for x in lista]
+    periodos = sorted({p for d in serie_sv.values() for p in d})
+    evolucao = {"periodos": periodos, "series": [{"nome": n, "valores": [int(serie_sv[n].get(p, 0)) for p in periodos]} for n in nomes]}
+
+    a_sv, a_tot = defaultdict(lambda: defaultdict(float)), defaultdict(float)
+    heat, op_tot, as_tot = defaultdict(lambda: [0.0, 0.0, 0.0]), defaultdict(float), defaultdict(float)
+    for r in B:
+        if not no_ano(r) or not no_mes(r):
+            continue
+        if not pr or r[2] == pr:                             # assunto × serviço respeita operadora
+            a_sv[r[3]][r[1]] += r[4]; a_tot[r[3]] += r[4]
+        if not sv or r[1] == sv:                             # mapa respeita serviço, ignora operadora
+            h = heat[(r[2], r[3])]
+            h[0] += r[4]; h[1] += r[7]; h[2] += r[8]         # dem, resol, aval
+            op_tot[r[2]] += r[4]; as_tot[r[3]] += r[4]
+    top_as = [k for k, _ in sorted(a_tot.items(), key=lambda x: -x[1])[:8]]
+    assunto_servico = {"assuntos": top_as, "servicos": nomes,
+                       "valores": [[int(a_sv[a].get(n, 0)) for n in nomes] for a in top_as], "totais": [int(a_tot[a]) for a in top_as]}
+    ops = [k for k, _ in sorted(op_tot.items(), key=lambda x: -x[1])[:10]]
+    ass = [k for k, _ in sorted(as_tot.items(), key=lambda x: -x[1])[:8]]
+    celulas = []
+    for o in ops:
+        for a in ass:
+            d, rs, av = heat.get((o, a), (0, 0, 0))
+            celulas.append({"op": o, "assunto": a, "total": int(d), "pct_op": _div(d, op_tot[o], 100),
+                            "pct_resolvidas": _div(rs, av, 100)})
+    return {"lista": lista, "evolucao": evolucao, "assunto_servico": assunto_servico,
+            "mapa": {"operadoras": ops, "assuntos": ass, "totais_op": [int(op_tot[o]) for o in ops], "celulas": celulas}}
 
 
 def montar(q):
@@ -135,6 +178,7 @@ def montar(q):
         if len(lst) < 7:
             v = dia_acc[d]
             lst.append({"dia": d, "total": v[0], "respondida": v[1], "resolvida": v[2], "pct": _div(v[2], v[0], 100, 2)})
+    servicos = _bloco_servicos(A, B, ano, mes, pr, uf, sv, base, no_ano, no_mes, z)
     meta = json.loads((DATA / "meta.json").read_text(encoding="utf-8"))
     try:                                        # última checagem do workflow (opcional)
         meta["verificado_em"] = json.loads((DATA / "verificacao.json").read_text(encoding="utf-8"))["verificado_em"]
@@ -146,7 +190,7 @@ def montar(q):
                    "prestadoras": sorted({r[2] for r in A}), "ufs": sorted({r[3] for r in A})},
         "kpis": resumo(tot), "sat": sat(tot), "serie": meses,
         "dias": dias, "ultima_data": _ultima_data(), "operadoras": top_op, "assuntos": assuntos, "regional": regional,
-        "assunto_filtra_uf": bool(uf),
+        "assunto_filtra_uf": bool(uf), "servicos": servicos,
     }
 
 
