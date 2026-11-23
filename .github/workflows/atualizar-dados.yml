@@ -22,6 +22,7 @@ jobs:
           cache-dependency-path: requirements-etl.txt
       - run: pip install -r requirements-etl.txt
       - name: Rodar ETL
+        timeout-minutes: 15
         env:
           DATA_URL: ${{ vars.DATA_URL || 'https://www.anatel.gov.br/dadosabertos/paineis_de_dados/consumidor/indicadores_qualidade_atendimento.zip' }}
         run: python scripts/etl.py

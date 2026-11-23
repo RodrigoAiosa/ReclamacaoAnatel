@@ -56,9 +56,22 @@ def read_bytes(args) -> tuple[bytes, str]:
     url = os.environ.get("DATA_URL")
     if not url:
         sys.exit("Defina DATA_URL (link do ZIP/CSV no dados.gov.br/Anatel) ou use --file/--sample.")
-    req = urllib.request.Request(url, headers={"User-Agent": "ReclamacaoAnatel-ETL/1.0"})
-    with urllib.request.urlopen(req, timeout=180) as r:
-        return r.read(), url
+    import time
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124 Safari/537.36",
+        "Accept": "*/*"})
+    inicio, buf, limite = time.time(), bytearray(), 600  # no máx. 10 min
+    print(f"Baixando {url}", flush=True)
+    with urllib.request.urlopen(req, timeout=60) as r:
+        print(f"HTTP {r.status} · tamanho: {r.headers.get('Content-Length', '?')} bytes", flush=True)
+        while chunk := r.read(1 << 20):
+            buf += chunk
+            if time.time() - inicio > limite:
+                sys.exit("Download excedeu o tempo limite.")
+            if len(buf) % (20 << 20) < (1 << 20):
+                print(f"  {len(buf) >> 20} MB…", flush=True)
+    print(f"Download ok: {len(buf) >> 20} MB em {time.time() - inicio:.0f}s", flush=True)
+    return bytes(buf), url
 
 
 def read_tables(raw: bytes, name: str) -> list[pd.DataFrame]:
