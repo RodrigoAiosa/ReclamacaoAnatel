@@ -97,6 +97,15 @@ footer{font-size:11px;color:#4f6c5e;margin:10px 4px 0;text-align:center}
 .capa .btn:focus-visible{outline:3px solid #1f6b46;outline-offset:3px}
 .capa .btn svg{width:1.7cqw;height:1.7cqw}
 #painel{display:none}
+#mapa{display:flex;flex-direction:column;align-items:center}
+#mapa svg{width:100%;max-width:560px;height:auto}
+#mapa path{stroke:#f5f8f6;stroke-width:.9;cursor:pointer;transition:opacity .15s}
+#mapa path:hover{opacity:.78}
+#mapa text{font:600 10px "Segoe UI",sans-serif;fill:#173a28;pointer-events:none;paint-order:stroke;stroke:rgba(255,255,255,.75);stroke-width:2.2px}
+.mapa-topo{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.mapa-topo select{padding:6px 8px;border:1px solid var(--linha);border-radius:6px;background:#fff;font:inherit;font-size:12.5px}
+.leg{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--mut);margin-top:6px}
+.leg i{flex:0 0 170px;height:8px;border-radius:4px;background:linear-gradient(90deg,#dcebe1,#1f6b46)}
 </style>
 </head>
 <body>
@@ -150,8 +159,12 @@ footer{font-size:11px;color:#4f6c5e;margin:10px 4px 0;text-align:center}
 
       <div class="pane" id="p_regional">
         <div class="g g2">
-          <div class="card"><h2>Reclamações por UF</h2><div class="sub">Passe o mouse para ver a satisfação de cada estado</div><div class="cv" style="height:520px"><canvas id="cUf"></canvas></div></div>
-          <div class="card"><h2>Indicadores por UF</h2><div class="sub">Ordenado por volume</div><div style="max-height:555px;overflow:auto"><table id="tUf"></table></div></div>
+          <div class="card"><h2>Indicadores por UF</h2><div class="sub">Mapa do Brasil colorido pela métrica escolhida — passe o mouse para ver a satisfação; clique para filtrar o painel por estado</div>
+            <div class="mapa-topo"><label for="mMet" style="font-size:12px;color:var(--mut)">Métrica</label>
+              <select id="mMet"><option value="total">Reclamações (volume)</option><option value="pct_respondidas">% respondidas</option><option value="pct_resolvidas">% resolvidas</option>
+                <option value="nota">Nota média</option><option value="satisfeitos">% satisfeitos</option><option value="tmr">Tempo médio de resposta (dias)</option></select></div>
+            <div id="mapa" role="img" aria-label="Mapa do Brasil colorido por estado"></div><div class="leg" id="mapaLeg"></div></div>
+          <div class="card"><h2>Tabela por UF</h2><div class="sub">Ordenado por volume</div><div style="max-height:620px;overflow:auto"><table id="tUf"></table></div></div>
         </div>
       </div>
 
@@ -245,7 +258,41 @@ function barras(id, itens, tooltipFn, horiz) {
                y: {display: horiz, beginAtZero: true, grid: {display: false}, border: {display: false}, ticks: {color: "#222", font: {size: 12},
                     callback: function (v) { return horiz ? corta(this.getLabelForValue(v), 30) : ""; }}}}}});
 }
-["cOp", "cAss", "cMes", "cUf"].forEach(id => $(id).addEventListener("mouseleave", esconderTip));
+["cOp", "cAss", "cMes"].forEach(id => $(id).addEventListener("mouseleave", esconderTip));
+
+/* ---------- mapa do Brasil por UF ---------- */
+const UF_NOME = {AC:"Acre",AL:"Alagoas",AM:"Amazonas",AP:"Amapá",BA:"Bahia",CE:"Ceará",DF:"Distrito Federal",ES:"Espírito Santo",GO:"Goiás",MA:"Maranhão",MG:"Minas Gerais",MS:"Mato Grosso do Sul",MT:"Mato Grosso",PA:"Pará",PB:"Paraíba",PE:"Pernambuco",PI:"Piauí",PR:"Paraná",RJ:"Rio de Janeiro",RN:"Rio Grande do Norte",RO:"Rondônia",RR:"Roraima",RS:"Rio Grande do Sul",SC:"Santa Catarina",SE:"Sergipe",SP:"São Paulo",TO:"Tocantins"};
+const MAPA_MET = {total: r => r.total, pct_respondidas: r => r.pct_respondidas, pct_resolvidas: r => r.pct_resolvidas, nota: r => r.sat.nota, satisfeitos: r => r.sat.satisfeitos, tmr: r => r.tmr};
+const fmtMapa = (m, v) => v == null ? "–" : m === "total" ? num(v) : m === "nota" ? num(v, 2) : m === "tmr" ? num(v, 1) : pc(v);
+let GEO = null;
+fetch("brasil-uf.json").then(r => r.json()).then(g => { GEO = g; if (D) desenharMapa(); }).catch(() => {});
+function mix(a, b, t) { const h = x => [1, 3, 5].map(i => parseInt(x.slice(i, i + 2), 16)); const A = h(a), B = h(b); return "#" + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, "0")).join(""); }
+function desenharMapa() {
+  const host = $("mapa"); if (!GEO || !D) return;
+  const met = $("mMet").value, get = MAPA_MET[met], porUf = Object.fromEntries(D.regional.map(r => [r.nome, r]));
+  const vals = Object.values(porUf).map(get).filter(v => v != null), lo = Math.min(...vals), hi = Math.max(...vals);
+  const cor = v => v == null ? "#e4e7e5" : mix("#dcebe1", "#1f6b46", hi === lo ? .5 : (v - lo) / (hi - lo));
+  const ns = "http://www.w3.org/2000/svg", svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", GEO.viewBox); host.innerHTML = ""; host.appendChild(svg);
+  const sel = $("fUf").value;
+  Object.entries(GEO.paths).forEach(([uf, d]) => {
+    const r = porUf[uf], el = document.createElementNS(ns, "path");
+    el.setAttribute("d", d); el.setAttribute("fill", cor(r ? get(r) : null));
+    if (uf === sel) { el.style.stroke = "#111"; el.style.strokeWidth = "2.2"; }
+    el.addEventListener("mousemove", e => mostrarTip(r ? tipSatisfacao(`${uf} — ${UF_NOME[uf]}`, r.sat, ` · ${num(r.total)} reclamações`) : `<h3>${uf} — ${UF_NOME[uf]}</h3><div class="s">sem dados no filtro atual</div>`, e.clientX, e.clientY));
+    el.addEventListener("mouseleave", esconderTip);
+    el.addEventListener("click", () => { $("fUf").value = sel === uf ? "" : uf; carregar(); });
+    svg.appendChild(el);
+  });
+  Object.keys(GEO.paths).forEach((uf, i) => {          // rótulos no centro de cada estado
+    const b = svg.children[i].getBBox(); if (!b.width) return;
+    const t = document.createElementNS(ns, "text"); t.setAttribute("x", b.x + b.width / 2); t.setAttribute("y", b.y + b.height / 2 + 3);
+    t.setAttribute("text-anchor", "middle"); t.textContent = uf; svg.appendChild(t);
+  });
+  if (sel && svg.children[Object.keys(GEO.paths).indexOf(sel)]) svg.appendChild(svg.children[Object.keys(GEO.paths).indexOf(sel)]);
+  $("mapaLeg").innerHTML = `<span>${fmtMapa(met, lo)}</span><i></i><span>${fmtMapa(met, hi)}</span>`;
+}
+$("mMet").addEventListener("change", desenharMapa);
 
 /* ---------- renderização ---------- */
 function painelSatisfacao(s) {
@@ -279,7 +326,7 @@ function render() {
       plugins: {legend: {display: false}, tooltip: externo(i => tipMes(D.serie[i]), "tbl")},
       scales: {x: {grid: {display: false}, ticks: {color: "#444", maxTicksLimit: 14}}, y: {display: false, beginAtZero: true}}}});
 
-  barras("cUf", D.regional, i => tipSatisfacao("Satisfação dos clientes", D.regional[i].sat, ` · ${D.regional[i].nome}`), true);
+  desenharMapa();
   $("tUf").innerHTML = `<thead><tr><th>UF</th><th>Reclamações</th><th>% respondidas</th><th>% resolvidas</th><th>TMR</th><th>Nota</th></tr></thead><tbody>` +
     D.regional.map((r, i) => `<tr data-i="${i}"><td>${r.nome}</td><td>${num(r.total)}</td><td>${pc(r.pct_respondidas)}</td><td>${pc(r.pct_resolvidas)}</td><td>${num(r.tmr, 1)}</td><td>${num(r.sat.nota, 2)}</td></tr>`).join("") + "</tbody>";
   $("tOp").innerHTML = `<thead><tr><th>Operadora</th><th>Reclamações</th><th>% respondidas</th><th>% resolvidas</th><th>TMR (dias)</th><th>Nota média</th><th>Satisfeitos</th><th>Insatisfeitos</th></tr></thead><tbody>` +
@@ -332,7 +379,7 @@ addEventListener("hashchange", rota); rota();
 document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
   document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === t));
   document.querySelectorAll(".pane").forEach(p => p.classList.toggle("on", p.id === "p_" + t.dataset.t));
-  esconderTip(); Object.values(charts).forEach(c => c.resize());
+  esconderTip(); Object.values(charts).forEach(c => c.resize()); if (t.dataset.t === "regional") desenharMapa();
 }));
 carregar().catch(e => { $("aviso").style.display = "block"; $("aviso").textContent = "Falha ao carregar: " + e; });
 </script>
