@@ -42,3 +42,7 @@ O arquivo da Anatel (`AnatelConsumidorReclamacoesCSV.csv`, ~2,4 GB, uma linha po
 | Prazo médio | média de `PrazoResposta` nas respondidas |
 
 Se o ZIP não mudou (sha256), o ETL sai sem reprocessar.
+
+## Versão para celular
+
+`/m` (arquivo `public/m.html`) é uma versão feita só para telas de celular: navegação inferior, filtros em folha, toque no lugar do mouse. Celulares abrindo o painel são levados para ela; `/?desktop=1` força a versão completa.

@@ -6,5 +6,11 @@
       "includeFiles": "data/**",
       "maxDuration": 10
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/m",
+      "destination": "/m.html"
+    }
+  ]
 }

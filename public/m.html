@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f6b46">
+<title>Reclamações Anatel — versão celular</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+:root{--verde:#1f6b46;--verde2:#2e7d4f;--fundo:#e4efe8;--card:#fff;--ink:#1d2b24;--mut:#6f8a7b;--linha:#dbe6df;--azul:#1f7bff;--vm:#e0382d;--lj:#f4a261;--nav:62px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--fundo);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;font-size:15px;-webkit-text-size-adjust:100%}
+body{padding-bottom:calc(var(--nav) + env(safe-area-inset-bottom) + 12px)}
+button{font:inherit;cursor:pointer}
+/* topo */
+.top{position:sticky;top:0;z-index:20;background:var(--verde);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px}
+.brand{font-weight:800;font-size:16px;letter-spacing:.2px;line-height:1.15}.brand small{display:block;font-weight:400;font-size:11px;opacity:.8;margin-top:1px}
+#bFil{background:#fff;color:var(--verde);border:0;border-radius:20px;padding:8px 14px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px}
+#bFil b{background:var(--verde);color:#fff;border-radius:10px;min-width:20px;height:20px;font-size:12px;display:none;align-items:center;justify-content:center;padding:0 5px}
+#bFil b.on{display:inline-flex}
+.ops{display:flex;gap:8px;padding:10px 14px 4px;overflow-x:auto;scrollbar-width:none}.ops::-webkit-scrollbar{display:none}
+.chip{flex:none;display:flex;align-items:center;gap:7px;background:#fff;border:2px solid transparent;border-radius:24px;padding:5px 14px 5px 6px;font-weight:600;color:var(--ink);font-size:14px}
+.chip img,.chip .ic{width:26px;height:26px;border-radius:50%;object-fit:cover}.chip .ic{background:var(--verde);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px}
+.chip.on{border-color:var(--verde);background:#f1f8f4}
+/* conteúdo */
+.view{display:none;padding:10px 14px}.view.on{display:block}
+.card{background:var(--card);border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:0 1px 2px rgba(31,107,70,.08)}
+.card h2{margin:0;font-size:17px;color:var(--verde2);font-weight:700}.sub{font-size:12px;color:var(--mut);margin:2px 0 10px;line-height:1.3}
+.aviso{background:#fff4dc;color:#7a5200;border-radius:12px;padding:10px 12px;margin:10px 14px 0;font-size:13px;display:none}
+.carr{height:260px;position:relative}.carr.alto{height:340px}
+/* kpis com flip */
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.flip{perspective:800px;height:104px}.flip .fi{position:relative;height:100%;transition:transform .5s;transform-style:preserve-3d}.flip.vira .fi{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:#fff;border-radius:16px;padding:11px 12px;display:flex;flex-direction:column;box-shadow:0 1px 2px rgba(31,107,70,.08)}
+.face .t{font-size:12px;color:var(--mut);line-height:1.2;display:flex;justify-content:space-between;gap:6px}
+.face .v{flex:1;display:flex;align-items:center;font-size:26px;font-weight:600;position:relative;padding-left:12px}
+.face .v:before{content:"";position:absolute;left:0;top:18%;bottom:18%;width:5px;border-radius:3px;background:#6fae8a}
+.verso{transform:rotateY(180deg);background:var(--verde);color:#fff;font-size:12px;line-height:1.3;justify-content:center;gap:3px}.verso b.vt{color:#bfe8d0;font-size:13px}
+.dica{font-size:11.5px;color:var(--mut);text-align:center;margin:-2px 0 10px}
+/* satisfação */
+.sat4{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.sat4>div{border:1px solid var(--linha);border-radius:12px;padding:8px 10px}.sat4 span{font-size:11.5px;color:var(--mut);display:block}.sat4 b{font-size:21px}
+.pos{color:#1e9a52}.neg{color:var(--vm)}.azl{color:var(--azul)}
+.emo{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;text-align:center;font-size:10.5px}.emo div{display:flex;flex-direction:column;align-items:center;gap:2px}.emo .e{font-size:24px}.emo b{font-size:12px}.emo em{font-style:normal;color:var(--mut)}
+/* listas de barras */
+.bl{display:flex;flex-direction:column;gap:9px}
+.br{display:block;width:100%;text-align:left;background:none;border:0;padding:0}
+.br .l{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;margin-bottom:3px}.br .l span:first-child{font-weight:600}.br .l span:last-child{color:#4a5a52;white-space:nowrap}
+.br .b{height:11px;background:#edf3ef;border-radius:6px;overflow:hidden}.br .b i{display:block;height:100%;border-radius:6px;background:#8fc4a5}
+/* destaques */
+.dst{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.dst>div{background:#fff;border-radius:16px;padding:11px 12px 11px 15px;position:relative;overflow:hidden}.dst>div:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--c)}
+.dst .r{font-size:11.5px;color:var(--mut)}.dst .n{font-size:17px;font-weight:800;color:#16492f;line-height:1.15;margin:2px 0 4px}.dst .d{font-size:11.5px;color:#4a5a52;line-height:1.3}
+.nota{font-size:11.5px;color:var(--mut);line-height:1.35}
+/* cartões de lista (operadoras, UF) */
+.li{display:block;width:100%;text-align:left;background:#fff;border:0;border-radius:14px;padding:11px 12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(31,107,70,.08)}
+.li .h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.li .h b{font-size:15px}.li .h span{font-size:13px;color:#4a5a52}
+.li .g{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:7px;font-size:11px;color:var(--mut)}.li .g b{display:block;font-size:13.5px;color:var(--ink);font-weight:600}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;border-radius:9px;padding:1px 8px;margin-left:6px;vertical-align:middle;background:#eee}
+.maisbtn{width:100%;border:1.5px solid var(--verde);background:#fff;color:var(--verde);border-radius:14px;padding:11px;font-weight:700;margin:2px 0 10px}
+/* mapa */
+.sel{width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid var(--linha);background:#fff;font:inherit;color:var(--ink);margin-bottom:8px}
+#mapa svg{width:100%;height:auto;display:block}#mapa path{stroke:#fff;stroke-width:.8;cursor:pointer}#mapa text{font-size:11px;fill:#13321f;font-weight:600;pointer-events:none}
+.leg{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--mut);justify-content:center;margin-top:4px}.leg i{width:110px;height:8px;border-radius:4px;background:linear-gradient(90deg,#dcebe1,#1f6b46)}
+/* mapas de calor */
+.hs{overflow-x:auto;margin:0 -14px;padding:0 14px 6px}.ht{border-collapse:separate;border-spacing:2px;font-size:11.5px}
+.ht th{font-weight:500;color:var(--mut);font-size:10.5px;line-height:1.15;vertical-align:bottom;padding:2px 3px 5px;min-width:74px;max-width:88px}
+.ht th.o,.ht td.o{position:sticky;left:0;background:#fff;z-index:2;min-width:92px;max-width:92px;text-align:left;font-weight:700;font-size:11.5px;padding-right:4px;color:var(--ink)}
+.ht td{height:36px;min-width:60px;text-align:center;border-radius:6px;font-weight:600}.ht td.o{border-radius:0}.ht td.tt{background:#f1f6f3;color:var(--ink);font-weight:600;min-width:62px}
+.hl{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--mut);margin-top:6px}.hl i{width:100px;height:7px;border-radius:4px;background:linear-gradient(90deg,#f1f6f3,#1f6b46)}
+/* navegação */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--linha);display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -2px 10px rgba(0,0,0,.06)}
+.nav button{background:none;border:0;height:var(--nav);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#8aa396;font-size:10.5px;font-weight:600;position:relative}
+.nav button svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.nav button.on{color:var(--verde)}.nav button.on:before{content:"";position:absolute;top:0;left:22%;right:22%;height:3px;border-radius:0 0 3px 3px;background:var(--verde)}
+/* folha (bottom sheet) */
+.sheet{position:fixed;inset:0;z-index:50;display:none}.sheet.on{display:block}
+.sheet .bd{position:absolute;inset:0;background:rgba(10,30,20,.45)}
+.sheet .pn{position:absolute;left:0;right:0;bottom:0;max-height:86vh;overflow:auto;background:#fff;border-radius:22px 22px 0 0;padding:8px 16px calc(18px + env(safe-area-inset-bottom));animation:sobe .22s ease-out}
+@keyframes sobe{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
+.sheet .al{width:42px;height:5px;border-radius:3px;background:#cfdcd4;margin:2px auto 10px}
+.sheet h3{margin:4px 0 2px;font-size:18px;color:var(--verde2)}.sheet .s{font-size:12.5px;color:var(--mut);margin-bottom:10px}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #edf3ef;font-size:14px}.kv b{white-space:nowrap}
+.dr{display:grid;grid-template-columns:104px 1fr 38px 56px;gap:6px;align-items:center;font-size:12px;margin:5px 0}.dr .b{height:8px;background:#edf3ef;border-radius:4px;overflow:hidden}.dr .b i{display:block;height:100%}.dr em{font-style:normal;color:var(--mut);text-align:right;font-size:11px}
+.btn{width:100%;border:0;border-radius:14px;padding:13px;font-weight:700;font-size:15px;margin-top:12px;background:var(--verde);color:#fff}.btn.sec{background:#fff;color:var(--verde);border:1.5px solid var(--verde)}
+.fl label{display:block;font-weight:700;color:var(--verde2);font-size:13px;margin:12px 0 5px}
+/* sobre */
+details{border-bottom:1px solid #edf3ef;padding:10px 0}summary{font-weight:700;color:var(--verde2);cursor:pointer;font-size:15px}details p,details li{font-size:13.5px;line-height:1.45;color:#2c3a33}details ul{padding-left:18px;margin:6px 0}
+code{background:#eef5f0;border-radius:5px;padding:1px 6px;font-size:12.5px}.vd{display:block;text-align:center;color:var(--verde);font-weight:700;margin:6px 0 14px;font-size:14px}
+.rodape{font-size:11px;color:var(--mut);text-align:center;padding:4px 18px 12px;line-height:1.4}
+.carga{position:fixed;inset:0;z-index:60;background:rgba(228,239,232,.7);display:none;align-items:center;justify-content:center}.carga.on{display:flex}
+.carga i{width:34px;height:34px;border:4px solid #bfe0cc;border-top-color:var(--verde);border-radius:50%;animation:g .8s linear infinite}@keyframes g{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">Reclamações Anatel<small id="sub">Carregando…</small></div>
+  <button id="bFil" aria-label="Abrir filtros">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 5h18M6 12h12M10 19h4"/></svg>Filtros<b id="nFil"></b></button>
+</header>
+<div class="aviso" id="aviso"></div>
+<div class="ops" id="ops"></div>
+
+<main>
+  <section class="view on" id="v_geral">
+    <div class="kpis" id="kpis"></div>
+    <div class="dica">Toque em um cartão para ver o que o indicador significa</div>
+    <div class="card"><h2>Satisfação do Cliente</h2><div class="sub" id="satSub"></div><div id="satBox"></div></div>
+    <div class="card"><h2>Reclamações por Operadora</h2><div class="sub">As 5 maiores — toque para ver a satisfação</div><div class="bl" id="blOp"></div></div>
+    <div class="card"><h2>Assunto da Reclamação</h2><div class="sub">Mais frequentes <span id="aviAss"></span> — toque para ver os serviços</div><div class="bl" id="blAss"></div></div>
+    <div class="card"><h2>Variação por Mês</h2><div class="sub">Número de reclamações por mês — toque no gráfico para ver o mês</div><div class="carr"><canvas id="cMes"></canvas></div></div>
+  </section>
+
+  <section class="view" id="v_regional">
+    <div class="card"><h2>Mapa por UF</h2><div class="sub">Toque em um estado para ver os detalhes</div>
+      <select class="sel" id="mMet"><option value="total">Reclamações</option><option value="pct_respondidas">% respondidas</option><option value="pct_resolvidas">% resolvidas</option><option value="nota">Nota média</option><option value="satisfeitos">% satisfeitos</option><option value="tmr">TMR (dias)</option></select>
+      <div id="mapa"></div><div class="leg" id="mapaLeg"></div></div>
+    <div class="card"><h2>Ranking por UF</h2><div class="sub">Ordenado por volume — toque para ver a satisfação</div><div id="lUf"></div></div>
+  </section>
+
+  <section class="view" id="v_operadora">
+    <div class="dst" id="destOp"></div><div class="nota" id="notaDst" style="margin:-4px 4px 12px"></div>
+    <div class="card"><h2>Evolução Mensal por Operadora</h2><div class="sub">As 6 maiores <span style="color:#a06a00">(ignora os filtros de Operadora e Mês)</span> — toque para ver o mês</div><div class="carr alto"><canvas id="cEvOp"></canvas></div></div>
+    <div class="card"><h2>Distribuição das Notas</h2><div class="sub">% de avaliações por nota, 10 maiores — toque para ver a satisfação</div><div class="carr alto"><canvas id="cNotaOp"></canvas></div></div>
+    <div class="card"><h2>Ranking de Operadoras</h2><div class="sub">Top 20 por volume — toque para ver o detalhe</div><div id="lOp"></div></div>
+  </section>
+
+  <section class="view" id="v_servicos">
+    <div class="card"><h2>Reclamações por Serviço</h2><div class="sub">Ignora o filtro de Serviço — toque para ver a satisfação</div><div class="bl" id="blSv"></div></div>
+    <div class="card"><h2>Tempo Médio de Resposta</h2><div class="sub">Dias até a resposta, por serviço</div><div class="bl" id="blTmr"></div></div>
+    <div class="card"><h2>Assuntos por Serviço</h2><div class="sub">% das reclamações de cada serviço por assunto — deslize para o lado</div><div class="hs"><table class="ht" id="heatAs"></table></div><div class="hl"><span>0%</span><i></i><span id="heatAsMax"></span></div></div>
+    <div class="card"><h2>Evolução Mensal por Serviço</h2><div class="sub">Reclamações por mês — toque para ver o mês</div><div class="carr alto"><canvas id="cEv"></canvas></div></div>
+    <div class="card"><h2>Mapa de Calor: Operadora × Assunto</h2><div class="sub">% do total de cada operadora, 10 maiores — deslize para o lado</div><div class="hs"><table class="ht" id="heat"></table></div><div class="hl"><span>0%</span><i></i><span id="heatMax"></span></div></div>
+    <div class="card"><h2>Reabertas por Operadora</h2><div class="sub">% das respondidas que foram reabertas · vermelho = acima da média geral</div><div class="bl" id="blReab"></div></div>
+  </section>
+
+  <section class="view" id="v_sobre"></section>
+</main>
+
+<nav class="nav" id="nav">
+  <button data-v="geral" class="on"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Geral</button>
+  <button data-v="regional"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Regional</button>
+  <button data-v="operadora"><svg viewBox="0 0 24 24"><path d="M12 12v9M8.5 21h7M6.3 17.7a8 8 0 0 1 0-11.4M17.7 6.3a8 8 0 0 1 0 11.4M9.2 14.8a4 4 0 0 1 0-5.6M14.8 9.2a4 4 0 0 1 0 5.6"/></svg>Operadora</button>
+  <button data-v="servicos"><svg viewBox="0 0 24 24"><path d="M12 3 2 8l10 5 10-5-10-5zM2 13l10 5 10-5M2 17.5 12 22.5l10-5"/></svg>Serviços</button>
+  <button data-v="sobre"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.6v.1"/></svg>Sobre</button>
+</nav>
+
+<div class="sheet" id="sheet"><div class="bd" id="shBd"></div><div class="pn"><div class="al"></div><div id="shBody"></div></div></div>
+<div class="carga" id="carga"><i></i></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const MESES = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+const UF_NOME = {AC:"Acre",AL:"Alagoas",AM:"Amazonas",AP:"Amapá",BA:"Bahia",CE:"Ceará",DF:"Distrito Federal",ES:"Espírito Santo",GO:"Goiás",MA:"Maranhão",MG:"Minas Gerais",MS:"Mato Grosso do Sul",MT:"Mato Grosso",PA:"Pará",PB:"Paraíba",PE:"Pernambuco",PI:"Piauí",PR:"Paraná",RJ:"Rio de Janeiro",RN:"Rio Grande do Norte",RO:"Rondônia",RR:"Roraima",RS:"Rio Grande do Sul",SC:"Santa Catarina",SE:"Sergipe",SP:"São Paulo",TO:"Tocantins"};
+const COR = {"Muito satisf.": "#2e7d1f", "Satisfeito": "#8bc34a", "Indiferente": "#8a8a8a", "Insatisfeito": "#f0a08a", "Muito insat.": "#e0382d"};
+const COR_NIVEL = {"Excelente": "#1f6b46", "Bom": "#7bc08f", "Atenção": "#f4a261", "Crítico": "#e0382d", "Sem dados": "#aab4ae"};
+const PAL = ["#2e7d4f", "#1f7bff", "#f4a261", "#8e6bbf", "#e0382d", "#2a9d8f"];
+const EMO = {"Muito insat.": "😠", "Insatisfeito": "😟", "Indiferente": "😐", "Satisfeito": "🙂", "Muito satisf.": "😍"};
+const OPS_ICONE = ["CLARO", "VIVO", "TIM"], slug = n => n.toLowerCase();
+const num = (v, d = 0) => v == null ? "–" : Number(v).toLocaleString("pt-BR", {minimumFractionDigits: d, maximumFractionDigits: d});
+const pc = (v, d = 1) => v == null ? "–" : num(v, d) + "%";
+const compacto = v => v >= 1e6 ? num(v / 1e6, 2) + " Mi" : v >= 1e4 ? num(v / 1e3, 1) + " mil" : num(v);
+const mix = (a, b, t) => { const h = x => [1, 3, 5].map(i => parseInt(x.slice(i, i + 2), 16)); const A = h(a), B = h(b); return "#" + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, "0")).join(""); };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+
+let D = null, GEO = null, F = {ano: "", mes: "", servico: "", prestadora: "", uf: ""}, view = "geral", opcoes = null;
+const charts = {};
+const grafico = (id, cfg) => { charts[id]?.destroy(); charts[id] = new Chart($(id), cfg); };
+Chart.defaults.animation = false; Chart.defaults.font.family = '"Segoe UI",system-ui,sans-serif'; Chart.defaults.font.size = 11;
+
+/* ---------- folha (bottom sheet) ---------- */
+function abrir(html) { $("shBody").innerHTML = html; $("sheet").classList.add("on"); document.body.style.overflow = "hidden"; $("sheet").querySelector(".pn").scrollTop = 0; }
+function fechar() { $("sheet").classList.remove("on"); document.body.style.overflow = ""; }
+$("shBd").addEventListener("click", fechar);
+const kv = (k, v, c) => `<div class="kv"><span>${c ? `<i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c};margin-right:7px"></i>` : ""}${k}</span><b>${v}</b></div>`;
+function painelSat(s, extra = "") {
+  const cls = s.saldo >= 0 ? "pos" : "neg";
+  return `<div class="sat4"><div><span>Nota média</span><b>${num(s.nota, 2)}</b></div><div><span>Saldo (p.p.)</span><b class="${cls}">${s.saldo == null ? "–" : (s.saldo > 0 ? "+" : "") + num(s.saldo, 1)}</b></div>
+    <div><span>Satisfeitos</span><b class="pos">${pc(s.satisfeitos, 0)}</b></div><div><span>Insatisfeitos</span><b class="neg">${pc(s.insatisfeitos, 0)}</b></div></div>` +
+    s.dist.map(d => `<div class="dr"><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${COR[d.label]};margin-right:5px"></i>${d.label}</span><div class="b"><i style="width:${d.pct}%;background:${COR[d.label]}"></i></div><b>${num(d.pct, 0)}%</b><em>${num(d.n)}</em></div>`).join("") + extra;
+}
+const tagNivel = s => `<span class="tag" style="background:${COR_NIVEL[s.nivel]}22;color:${s.nivel === "Sem dados" ? "#555" : COR_NIVEL[s.nivel]}">${s.nivel}</span>`;
+function sheetSat(titulo, s, sub, extra) {
+  abrir(`<h3>${esc(titulo)} ${tagNivel(s)}</h3><div class="s">${num(s.avaliacoes)} avaliações${sub ? " · " + sub : ""}</div>${painelSat(s)}${extra || ""}`);
+}
+function sheetOp(o) {
+  const serv = (o.servicos || []).slice(0, 6).map(x => kv(esc(x.nome), `${num(x.n)} · ${pc(x.pct, 0)}`)).join("");
+  sheetSat(o.nome, o.sat, `${num(o.total)} reclamações`,
+    `<h3 style="font-size:15px;margin-top:14px">Indicadores</h3>${kv("% respondidas", pc(o.pct_respondidas))}${kv("% resolvidas", pc(o.pct_resolvidas))}${kv("% reabertas", pc(o.pct_reabertas))}${kv("TMR (dias)", num(o.tmr, 1))}
+     <h3 style="font-size:15px;margin-top:14px">Por serviço</h3>${serv}`);
+}
+
+/* ---------- filtros ---------- */
+function params() { const q = new URLSearchParams(); Object.entries(F).forEach(([k, v]) => v && q.set(k, v)); return q.toString(); }
+const selOpts = (arr, v, todos) => `<option value="">${todos}</option>` + arr.map(i => { const [val, txt] = Array.isArray(i) ? i : [i, i]; return `<option value="${esc(val)}"${val === v ? " selected" : ""}>${esc(txt)}</option>`; }).join("");
+function mesesDe(ano) { const por = opcoes.meses || {}; const ms = ano ? (por[ano] || []) : [...new Set(Object.values(por).flat())].sort(); return ms.map(m => [m, MESES[+m - 1]]); }
+function abrirFiltros() {
+  abrir(`<h3>Filtros</h3><div class="s">Valem para todas as telas, com as exceções descritas em “Sobre”.</div><div class="fl">
+    <label>Ano</label><select class="sel" id="xAno">${selOpts(opcoes.anos, F.ano, "Todos")}</select>
+    <label>Mês</label><select class="sel" id="xMes">${selOpts(mesesDe(F.ano), F.mes, "Todos")}</select>
+    <label>Serviço</label><select class="sel" id="xSer">${selOpts(opcoes.servicos, F.servico, "Todos")}</select>
+    <label>Operadora</label><select class="sel" id="xPre">${selOpts(opcoes.prestadoras, F.prestadora, "Todas")}</select>
+    <label>UF</label><select class="sel" id="xUf">${selOpts(opcoes.ufs.map(u => [u, `${u} — ${UF_NOME[u] || u}`]), F.uf, "Todas")}</select></div>
+    <button class="btn" id="xOk">Aplicar</button><button class="btn sec" id="xLimpa">Limpar (ano mais recente)</button>`);
+  $("xAno").onchange = () => { const m = $("xMes").value; $("xMes").innerHTML = selOpts(mesesDe($("xAno").value), m, "Todos"); };
+  $("xOk").onclick = () => { F = {ano: $("xAno").value, mes: $("xMes").value, servico: $("xSer").value, prestadora: $("xPre").value, uf: $("xUf").value}; fechar(); carregar(); };
+  $("xLimpa").onclick = () => { F = {ano: opcoes.anos[0], mes: "", servico: "", prestadora: "", uf: ""}; fechar(); carregar(); };
+}
+$("bFil").onclick = abrirFiltros;
+function marcarFiltros() {
+  const n = (F.mes ? 1 : 0) + (F.servico ? 1 : 0) + (F.prestadora ? 1 : 0) + (F.uf ? 1 : 0) + (F.ano && F.ano !== opcoes.anos[0] ? 1 : 0);
+  $("nFil").textContent = n; $("nFil").classList.toggle("on", n > 0);
+  const p = [F.ano || "Todos os anos", F.mes && MESES[+F.mes - 1], F.servico, F.prestadora, F.uf].filter(Boolean).join(" · ");
+  $("sub").textContent = p;
+  document.querySelectorAll(".chip").forEach(c => c.classList.toggle("on", c.dataset.op === F.prestadora));
+}
+function montarOps() {
+  const lista = (D.opcoes.principais || []).filter(n => OPS_ICONE.includes(n));
+  $("ops").innerHTML = `<button class="chip on" data-op=""><span class="ic">▦</span>Todas</button>` + lista.map(n => `<button class="chip" data-op="${n}"><img src="operadoras/${slug(n)}.webp" alt="" onerror="this.style.display='none'">${n[0] + n.slice(1).toLowerCase()}</button>`).join("");
+  $("ops").onclick = e => { const c = e.target.closest(".chip"); if (!c) return; F.prestadora = c.dataset.op === F.prestadora ? "" : c.dataset.op; carregar(); };
+}
+
+/* ---------- carga ---------- */
+async function carregar() {
+  $("carga").classList.add("on");
+  try {
+    const r = await fetch("/api/dados?" + params()); const d = await r.json();
+    if (d.erro) throw new Error(d.erro);
+    D = d; $("aviso").style.display = "none";
+    if (!opcoes) { opcoes = D.opcoes; F.ano = opcoes.anos[0]; montarOps(); return carregar(); }
+    marcarFiltros(); render();
+  } catch (e) { $("aviso").style.display = "block"; $("aviso").textContent = "Erro ao carregar os dados: " + e.message; }
+  finally { $("carga").classList.remove("on"); }
+}
+
+/* ---------- componentes ---------- */
+function barList(host, itens, f) {   // itens: [{nome, valor, txt, cor, click}]
+  const mx = Math.max(1, ...itens.map(i => i.valor || 0));
+  $(host).innerHTML = itens.map((i, k) => `<button class="br" data-k="${k}"><div class="l"><span>${esc(i.nome)}</span><span>${i.txt}</span></div><div class="b"><i style="width:${Math.max(1.5, 100 * (i.valor || 0) / mx)}%;${i.cor ? `background:${i.cor}` : ""}"></i></div></button>`).join("");
+  $(host).onclick = e => { const b = e.target.closest(".br"); if (b) itens[+b.dataset.k].click?.(); };
+}
+const KPIS = [["Total de Reclamações", "👥", "Reclamações abertas no período e nos filtros escolhidos.", k => kpi(k.total), null],
+  ["Respondido pela empresa", "↻", "A empresa respondeu na plataforma.", k => kpi(k.respondidas), k => `${pc(k.pct_respondidas)} das reclamações.`],
+  ["Não respondido", "✕", "Sem resposta da empresa (reclamações − respondidas).", k => num(k.nao_respondidas), null],
+  ["Sinalizado como resolvido", "✔", "O consumidor avaliou como resolvida.", k => kpi(k.resolvidas), k => `${pc(k.pct_resolvidas)} das avaliadas.`],
+  ["Sinalizado como não resolvido", "✘", "O consumidor avaliou como não resolvida.", k => kpi(k.nao_resolvidas), k => { const a = k.resolvidas + k.nao_resolvidas; return `${pc(a ? 100 * k.nao_resolvidas / a : null)} das avaliadas.`; }],
+  ["Tempo Médio de Resposta", "⏱", "Média de dias entre a abertura e a resposta (só respondidas).", k => num(k.tmr, 0) + '<small style="font-size:13px;color:var(--mut);margin-left:5px">dias</small>', null]];
+const kpi = v => v >= 1e6 ? num(v / 1e6, 2) + " Mi" : v >= 1e4 ? num(v / 1e3, 1) + " mil" : num(v);
+
+/* ---------- Geral ---------- */
+function renderGeral() {
+  const k = D.kpis;
+  $("kpis").innerHTML = KPIS.map(([t, ic, d, f, ex]) => `<div class="flip"><div class="fi"><div class="face"><div class="t">${t}<span>${ic}</span></div><div class="v">${f(k)}</div></div>
+    <div class="face verso"><b class="vt">${t}</b><span>${d} ${ex ? `<b>${ex(k)}</b>` : ""}</span></div></div></div>`).join("");
+  $("kpis").onclick = e => { const f = e.target.closest(".flip"); if (f) f.classList.toggle("vira"); };
+  const s = D.sat; $("satSub").textContent = `Total de avaliações: ${num(s.avaliacoes)}`;
+  $("satBox").innerHTML = `<div class="sat4"><div><span>⭐ Nota média</span><b>${num(s.nota, 2)}</b><span>de 5</span></div><div><span>Saldo</span><b class="azl">${s.saldo == null ? "–" : num(s.saldo, 1)}</b><span>p.p. · ${tagNivel(s)}</span></div>
+    <div><span>Satisfeitos</span><b class="pos">${pc(s.satisfeitos)}</b></div><div><span>Insatisfeitos</span><b class="neg">${pc(s.insatisfeitos)}</b></div></div>
+    <div class="emo">${s.dist.slice().reverse().map(d => `<div><span class="e">${EMO[d.label]}</span><span>${d.label}</span><b>${num(d.n)}</b><em>${num(d.pct, 1)}%</em></div>`).join("")}</div>`;
+  const ops = D.operadoras.slice(0, 5);
+  barList("blOp", ops.map(o => ({nome: o.nome, valor: o.total, txt: compacto(o.total), click: () => sheetOp(o)})));
+  $("aviAss").textContent = D.assunto_filtra_uf ? "(o filtro de UF não se aplica)" : "";
+  const ass = D.assuntos.slice(0, 5);
+  barList("blAss", ass.map(a => ({nome: a.nome, valor: a.total, txt: compacto(a.total), click: () => abrir(`<h3>${esc(a.nome)}</h3><div class="s">${num(a.total)} reclamações · por serviço</div>` + a.servicos.map(x => kv(esc(x.nome), `${num(x.n)} · ${pc(x.pct, 0)}`)).join(""))})));
+  const porAno = !!F.ano;
+  grafico("cMes", {type: "line", data: {labels: D.serie.map(m => porAno ? MESES[+m.periodo.slice(5) - 1] : m.periodo), datasets: [{data: D.serie.map(m => m.total), borderColor: "#1f7bff", borderWidth: 2.5, pointRadius: 2, pointHoverRadius: 6, tension: .25}]},
+    options: {maintainAspectRatio: false, plugins: {legend: {display: false}, tooltip: {enabled: false}},
+      onClick: (e, els) => { if (!els.length) return; const m = D.serie[els[0].index];
+        abrir(`<h3>${MESES[+m.periodo.slice(5) - 1]}/${m.periodo.slice(0, 4)}</h3><div class="s">${num(m.total)} reclamações</div>${kv("Respondidas", `${num(m.respondidas)} · ${pc(m.pct_respondidas)}`)}${kv("Resolvidas", `${num(m.resolvidas)} · ${pc(m.pct_resolvidas)}`)}${kv("Não resolvidas", num(m.nao_resolvidas))}${kv("TMR (dias)", num(m.tmr, 1))}${kv("Nota média", num(m.nota, 2))}`); },
+      scales: {x: {grid: {display: false}, ticks: {maxTicksLimit: 7, maxRotation: 0}}, y: {display: false, beginAtZero: true}}}});
+}
+
+/* ---------- Regional ---------- */
+const MAPA_MET = {total: r => r.total, pct_respondidas: r => r.pct_respondidas, pct_resolvidas: r => r.pct_resolvidas, nota: r => r.sat.nota, satisfeitos: r => r.sat.satisfeitos, tmr: r => r.tmr};
+const fmtMapa = (m, v) => v == null ? "–" : m === "total" ? num(v) : m === "nota" ? num(v, 2) : m === "tmr" ? num(v, 1) : pc(v);
+function sheetUf(uf, r) {
+  const filtrado = F.uf === uf;
+  if (!r) return abrir(`<h3>${uf} — ${UF_NOME[uf]}</h3><div class="s">Sem dados no filtro atual.</div>`);
+  sheetSat(`${uf} — ${UF_NOME[uf]}`, r.sat, `${num(r.total)} reclamações`,
+    `<h3 style="font-size:15px;margin-top:14px">Indicadores</h3>${kv("% respondidas", pc(r.pct_respondidas))}${kv("% resolvidas", pc(r.pct_resolvidas))}${kv("TMR (dias)", num(r.tmr, 1))}
+     <button class="btn" id="bUf">${filtrado ? "Remover filtro deste estado" : "Filtrar o painel por " + uf}</button>`);
+  $("bUf").onclick = () => { F.uf = filtrado ? "" : uf; fechar(); carregar(); };
+}
+function desenharMapa() {
+  const host = $("mapa"); if (!GEO || !D) return;
+  const met = $("mMet").value, get = MAPA_MET[met], porUf = Object.fromEntries(D.regional.map(r => [r.nome, r]));
+  const vals = Object.values(porUf).map(get).filter(v => v != null), lo = Math.min(...vals), hi = Math.max(...vals);
+  const cor = v => v == null ? "#e4e7e5" : mix("#dcebe1", "#1f6b46", hi === lo ? .5 : (v - lo) / (hi - lo));
+  const ns = "http://www.w3.org/2000/svg", svg = document.createElementNS(ns, "svg"); svg.setAttribute("viewBox", GEO.viewBox); host.innerHTML = ""; host.appendChild(svg);
+  Object.entries(GEO.paths).forEach(([uf, d]) => {
+    const r = porUf[uf], el = document.createElementNS(ns, "path"); el.setAttribute("d", d); el.setAttribute("fill", cor(r ? get(r) : null));
+    if (uf === F.uf) { el.style.stroke = "#111"; el.style.strokeWidth = "2.4"; }
+    el.addEventListener("click", () => sheetUf(uf, r)); svg.appendChild(el);
+  });
+  Object.keys(GEO.paths).forEach((uf, i) => { const b = svg.children[i].getBBox(); if (!b.width) return; const t = document.createElementNS(ns, "text"); t.setAttribute("x", b.x + b.width / 2); t.setAttribute("y", b.y + b.height / 2 + 3); t.setAttribute("text-anchor", "middle"); t.textContent = uf; svg.appendChild(t); });
+  $("mapaLeg").innerHTML = `<span>${fmtMapa(met, lo)}</span><i></i><span>${fmtMapa(met, hi)}</span>`;
+}
+let verTodasUf = false;
+function renderRegional() {
+  desenharMapa();
+  const R = D.regional, lista = verTodasUf ? R : R.slice(0, 10);
+  $("lUf").innerHTML = lista.map((r, i) => `<button class="li" data-i="${i}"><div class="h"><b>${r.nome} <span style="font-weight:400;color:var(--mut)">· ${UF_NOME[r.nome] || ""}</span></b><span>${num(r.total)}</span></div>
+    <div class="g"><div><b>${pc(r.pct_respondidas, 0)}</b>respondidas</div><div><b>${pc(r.pct_resolvidas, 0)}</b>resolvidas</div><div><b>${num(r.tmr, 1)}</b>TMR dias</div><div><b>${num(r.sat.nota, 2)}</b>nota</div></div></button>`).join("")
+    + (R.length > 10 ? `<button class="maisbtn" id="bMais">${verTodasUf ? "Mostrar só as 10 maiores" : `Ver todas as ${R.length} UFs`}</button>` : "");
+  $("lUf").onclick = e => { const b = e.target.closest(".li"); if (b) { const r = lista[+b.dataset.i]; return sheetUf(r.nome, r); } if (e.target.id === "bMais") { verTodasUf = !verTodasUf; renderRegional(); } };
+}
+$("mMet").onchange = desenharMapa;
+fetch("brasil-uf.json").then(r => r.json()).then(g => { GEO = g; if (D) desenharMapa(); }).catch(() => {});
+
+/* ---------- Operadora ---------- */
+function renderOperadora() {
+  const O = D.operadoras, ok = O.filter(o => o.total >= 1000), por = (arr, f, dir) => arr.slice().sort((a, b) => dir * (f(a) - f(b)))[0], cards = [];
+  if (O.length) {
+    const l = O[0]; cards.push(["Maior volume", l.nome, `<b>${num(l.total)}</b> reclamações`, "#2e7d4f"]);
+    const sn = por(ok.filter(o => o.sat.nota != null && o.sat.avaliacoes >= 500), o => o.sat.nota, -1); if (sn) cards.push(["Melhor nota média", sn.nome, `nota <b>${num(sn.sat.nota, 2)}</b> · ${pc(sn.sat.satisfeitos, 0)} satisfeitos`, "#1f7bff"]);
+    const tm = por(ok.filter(o => o.tmr != null), o => o.tmr, 1); if (tm) cards.push(["Resposta mais rápida", tm.nome, `TMR de <b>${num(tm.tmr, 1)}</b> dias`, "#8e6bbf"]);
+    const rb = por(ok.filter(o => o.pct_reabertas != null), o => o.pct_reabertas, -1); if (rb) cards.push(["Mais reabertas", rb.nome, `<b>${pc(rb.pct_reabertas)}</b> das respondidas`, "#e0382d"]);
+  }
+  $("destOp").innerHTML = cards.map(([r, n, d, c]) => `<div style="--c:${c}"><div class="r">${r}</div><div class="n">${esc(n)}</div><div class="d">${d}</div></div>`).join("");
+  $("notaDst").textContent = cards.length ? "Entre as operadoras com ao menos 1.000 reclamações (nota: 500 avaliações), no filtro atual." : "";
+  const E = D.evolucao_op, porAno = !!F.ano;
+  grafico("cEvOp", {type: "line", data: {labels: E.periodos.map(p => porAno ? MESES[+p.slice(5) - 1] : p), datasets: E.series.map((x, i) => ({label: x.nome, data: x.valores, borderColor: PAL[i % 6], backgroundColor: PAL[i % 6], borderWidth: 2.2, pointRadius: 0, pointHoverRadius: 4, tension: .25}))},
+    options: {maintainAspectRatio: false, interaction: {mode: "index", intersect: false}, plugins: {legend: {position: "bottom", labels: {boxWidth: 9, font: {size: 10.5}}}, tooltip: {enabled: false}},
+      onClick: (e, els) => { if (!els.length) return; const i = els[0].index, p = E.periodos[i], tot = E.series.reduce((a, x) => a + x.valores[i], 0);
+        abrir(`<h3>${MESES[+p.slice(5) - 1]}/${p.slice(0, 4)}</h3><div class="s">${num(tot)} reclamações nas 6 maiores</div>` + E.series.map((x, j) => [x, j]).sort((a, b) => b[0].valores[i] - a[0].valores[i]).map(([x, j]) => kv(esc(x.nome), num(x.valores[i]), PAL[j % 6])).join("")); },
+      scales: {x: {grid: {display: false}, ticks: {maxTicksLimit: 7, maxRotation: 0}}, y: {beginAtZero: true, grid: {color: "#e6eee9"}, ticks: {callback: v => compacto(v)}}}}});
+  const B = O.slice(0, 10).filter(o => o.sat.avaliacoes), cats = ["Muito insat.", "Insatisfeito", "Indiferente", "Satisfeito", "Muito satisf."], pct = (o, c) => (o.sat.dist.find(d => d.label === c) || {}).pct || 0;
+  grafico("cNotaOp", {type: "bar", data: {labels: B.map(o => o.nome), datasets: cats.map(c => ({label: c, data: B.map(o => pct(o, c)), backgroundColor: COR[c], borderWidth: 1, borderColor: "#fff", barPercentage: .8}))},
+    options: {indexAxis: "y", maintainAspectRatio: false, interaction: {mode: "nearest", axis: "y", intersect: false}, plugins: {legend: {position: "bottom", labels: {boxWidth: 9, font: {size: 10}}}, tooltip: {enabled: false}},
+      onClick: (e, els) => { if (els.length) sheetOp(B[els[0].index]); },
+      scales: {x: {stacked: true, max: 100, grid: {color: "#e6eee9"}, ticks: {callback: v => v + "%", maxTicksLimit: 6}}, y: {stacked: true, grid: {display: false}, border: {display: false}, ticks: {font: {size: 10.5}, color: "#222"}}}}});
+  $("lOp").innerHTML = O.map((o, i) => `<button class="li" data-i="${i}"><div class="h"><b>${esc(o.nome)}${tagNivel(o.sat)}</b><span>${num(o.total)}</span></div>
+    <div class="g"><div><b>${pc(o.pct_respondidas, 0)}</b>respondidas</div><div><b>${pc(o.pct_resolvidas, 0)}</b>resolvidas</div><div><b>${num(o.tmr, 1)}</b>TMR dias</div><div><b>${num(o.sat.nota, 2)}</b>nota</div></div></button>`).join("");
+  $("lOp").onclick = e => { const b = e.target.closest(".li"); if (b) sheetOp(O[+b.dataset.i]); };
+}
+
+/* ---------- Serviços e Assuntos ---------- */
+const corSv = n => PAL[Math.max(0, D.opcoes.servicos.indexOf(n)) % 6];
+function renderServicos() {
+  const S = D.servicos, porAno = !!F.ano;
+  barList("blSv", S.lista.map(x => ({nome: x.nome, valor: x.total, txt: compacto(x.total), cor: corSv(x.nome), click: () => sheetSat(x.nome, x.sat, `${num(x.total)} reclamações`)})));
+  const mediaTmr = D.kpis.tmr;
+  barList("blTmr", S.lista.map(x => ({nome: x.nome, valor: x.tmr, txt: `${num(x.tmr, 1)} dias`, cor: x.tmr > mediaTmr ? "#e8928a" : "#8fc4a5"})));
+  $("blTmr").insertAdjacentHTML("beforeend", `<div class="nota">Média geral: ${num(mediaTmr, 1)} dias · vermelho = acima da média.</div>`);
+  const A = S.assunto_servico, nA = A.assuntos.length, cols = [...A.assuntos, "Outros assuntos"];
+  const vol = A.servicos.map((_, j) => [...A.assuntos.map((_, i) => A.valores[i][j]), Math.max(0, A.totais_servico[j] - A.valores.reduce((t, v) => t + v[j], 0))]);
+  const pctA = (j, i) => A.totais_servico[j] ? 100 * vol[j][i] / A.totais_servico[j] : 0, mxA = Math.max(1, ...A.servicos.flatMap((_, j) => cols.map((_, i) => pctA(j, i))));
+  $("heatAs").innerHTML = `<tr><th class="o"></th>${cols.map(c => `<th>${esc(c)}</th>`).join("")}<th>Total</th></tr>` +
+    A.servicos.map((n, j) => `<tr><td class="o"><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${corSv(n)};margin-right:5px"></i>${esc(n)}</td>` +
+      cols.map((_, i) => { const t = pctA(j, i) / mxA; return `<td style="background:${mix("#f1f6f3", "#1f6b46", t)};color:${t > .5 ? "#fff" : "#1d2b24"}" data-j="${j}" data-i="${i}">${vol[j][i] ? num(pctA(j, i), 0) + "%" : "–"}</td>`; }).join("") + `<td class="tt">${compacto(A.totais_servico[j])}</td></tr>`).join("");
+  $("heatAsMax").textContent = pc(mxA, 0);
+  $("heatAs").onclick = e => { const c = e.target.closest("td[data-j]"); if (!c) return; const j = +c.dataset.j, i = +c.dataset.i;
+    abrir(`<h3>${esc(A.servicos[j])}</h3><div class="s">${esc(cols[i])}</div>${kv("Reclamações", num(vol[j][i]))}${kv("% do serviço", pc(pctA(j, i)))}${kv("Total do serviço", num(A.totais_servico[j]))}`); };
+  const E = S.evolucao;
+  grafico("cEv", {type: "line", data: {labels: E.periodos.map(p => porAno ? MESES[+p.slice(5) - 1] : p), datasets: E.series.map(x => ({label: x.nome, data: x.valores, borderColor: corSv(x.nome), backgroundColor: corSv(x.nome), borderWidth: 2.2, pointRadius: 0, pointHoverRadius: 4, tension: .25}))},
+    options: {maintainAspectRatio: false, interaction: {mode: "index", intersect: false}, plugins: {legend: {position: "bottom", labels: {boxWidth: 9, font: {size: 10.5}}}, tooltip: {enabled: false}},
+      onClick: (e, els) => { if (!els.length) return; const i = els[0].index, p = E.periodos[i], tot = E.series.reduce((a, x) => a + x.valores[i], 0);
+        abrir(`<h3>${MESES[+p.slice(5) - 1]}/${p.slice(0, 4)}</h3><div class="s">${num(tot)} reclamações no mês</div>` + E.series.slice().sort((a, b) => b.valores[i] - a.valores[i]).map(x => kv(esc(x.nome), `${num(x.valores[i])} · ${pc(tot ? 100 * x.valores[i] / tot : null, 0)}`, corSv(x.nome))).join("")); },
+      scales: {x: {grid: {display: false}, ticks: {maxTicksLimit: 7, maxRotation: 0}}, y: {beginAtZero: true, grid: {color: "#e6eee9"}, ticks: {callback: v => compacto(v)}}}}});
+  const M = S.mapa, mx = Math.max(1, ...M.celulas.map(c => c.pct_op || 0));
+  $("heat").innerHTML = `<tr><th class="o"></th>${M.assuntos.map(a => `<th>${esc(a)}</th>`).join("")}</tr>` +
+    M.operadoras.map((o, oi) => `<tr><td class="o">${esc(o)}</td>` + M.assuntos.map((a, ai) => { const c = M.celulas[oi * M.assuntos.length + ai], t = (c.pct_op || 0) / mx;
+      return `<td style="background:${mix("#f1f6f3", "#1f6b46", t)};color:${t > .5 ? "#fff" : "#1d2b24"}" data-k="${oi * M.assuntos.length + ai}">${c.total ? num(c.pct_op, 0) + "%" : "–"}</td>`; }).join("") + `</tr>`).join("");
+  $("heatMax").textContent = pc(mx, 0);
+  $("heat").onclick = e => { const c = e.target.closest("td[data-k]"); if (!c) return; const x = M.celulas[+c.dataset.k];
+    abrir(`<h3>${esc(x.op)}</h3><div class="s">${esc(x.assunto)}</div>${kv("Reclamações", num(x.total))}${kv("% do total da operadora", pc(x.pct_op))}${kv("% resolvidas", pc(x.pct_resolvidas))}`); };
+  const base = D.operadoras.slice(0, 10), media = D.kpis.pct_reabertas;
+  barList("blReab", base.map(o => ({nome: o.nome, valor: o.pct_reabertas, txt: pc(o.pct_reabertas), cor: o.pct_reabertas > media ? "#e8928a" : "#a9cdb7", click: () => sheetOp(o)})));
+  $("blReab").insertAdjacentHTML("beforeend", `<div class="nota">Média geral: ${pc(media)}.</div>`);
+}
+
+/* ---------- Sobre ---------- */
+function renderSobre() {
+  const m = D.meta, k = D.kpis;
+  $("v_sobre").innerHTML = `<div class="card"><h2>Sobre este painel</h2><div class="sub">Qualidade do atendimento das prestadoras de telecom, com dados abertos da Anatel</div>
+    <details open><summary>Para que serve</summary><p>Acompanhar quanto se reclama, de quê, onde, quão rápido a empresa responde e se o consumidor fica satisfeito. Mostra só totais, nunca dados de pessoas.</p></details>
+    <details><summary>Indicadores</summary><ul>
+      <li><b>% respondidas</b> = respondidas ÷ reclamações. Exemplo agora: <code>${num(k.respondidas)} ÷ ${num(k.total)} = ${pc(k.pct_respondidas)}</code></li>
+      <li><b>% resolvidas</b> = resolvidas ÷ (resolvidas + não resolvidas), só entre as avaliadas.</li>
+      <li><b>% reabertas</b> = reabertas ÷ respondidas.</li>
+      <li><b>TMR</b> = média de dias entre a abertura e a resposta (só respondidas).</li>
+      <li><b>Satisfeitos</b> = notas 4 e 5 ÷ avaliações; <b>insatisfeitos</b> = notas 1 e 2 ÷ avaliações.</li>
+      <li><b>Saldo</b> = % satisfeitos − % insatisfeitos, em pontos percentuais.</li></ul></details>
+    <details><summary>Níveis de satisfação</summary><ul><li><b>Sem dados:</b> nenhuma avaliação no recorte.</li><li><b>Crítico:</b> saldo negativo.</li><li><b>Atenção:</b> insatisfeitos de 20% ou mais, mesmo com saldo positivo.</li><li><b>Excelente:</b> saldo de 50 p.p. ou mais.</li><li><b>Bom:</b> os demais casos.</li></ul></details>
+    <details><summary>Filtros e exceções</summary><ul><li>As comparações entre serviços ignoram o filtro de Serviço.</li><li>O mapa de calor Operadora × Assunto e a evolução por operadora ignoram o filtro de Operadora.</li><li>Os gráficos por assunto não se aplicam ao filtro de UF.</li><li>A evolução mensal ignora o filtro de Mês.</li></ul></details>
+    <details><summary>Limitações</summary><ul><li>Nota e % resolvidas vêm só de quem avaliou o atendimento.</li><li>Operadoras maiores têm mais reclamações: compare também os percentuais.</li><li>Só as 20 maiores operadoras aparecem nos rankings.</li><li>A Anatel pode corrigir dados depois da publicação, e o último mês costuma estar incompleto.</li></ul></details>
+    <details><summary>Fonte e atualização</summary><p>Anatel · Painéis de dados abertos · Consumidor — Indicadores de Qualidade de Atendimento (Creative Commons Attribution). ${num(m.registros_origem)} registros, de ${m.periodo[0]} a ${m.periodo[1]}. Dados processados em ${new Date(m.atualizado_em).toLocaleString("pt-BR")}. Verificação automática diária às 03:43 (Brasília); se há dados novos, o painel é republicado sozinho.</p></details></div>
+    <a class="vd" href="/?desktop=1">Abrir a versão completa (computador)</a>`;
+}
+
+/* ---------- navegação ---------- */
+function render() {
+  renderGeral(); renderRegional(); renderOperadora(); renderServicos(); renderSobre();
+  const m = D.meta; $("sub").title = `Dados processados em ${new Date(m.atualizado_em).toLocaleString("pt-BR")}`;
+  Object.values(charts).forEach(c => c.resize());
+}
+function ir(v) {
+  view = v; document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === "v_" + v));
+  document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
+  $("ops").style.display = v === "sobre" ? "none" : "flex";
+  window.scrollTo(0, 0); requestAnimationFrame(() => { Object.values(charts).forEach(c => c.resize()); if (v === "regional") desenharMapa(); });
+  if (location.hash !== "#" + v) history.replaceState(null, "", "#" + v);
+}
+$("nav").onclick = e => { const b = e.target.closest("button"); if (b) ir(b.dataset.v); };
+addEventListener("keydown", e => { if (e.key === "Escape") fechar(); });
+carregar().then(() => { const h = location.hash.slice(1); if (["geral", "regional", "operadora", "servicos", "sobre"].includes(h)) ir(h); });
+</script>
+</body>
+</html>
