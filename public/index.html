@@ -17,11 +17,11 @@ main{max-width:1300px;margin:0 auto;padding:20px 28px 40px}
 .filtros label{display:flex;flex-direction:column;font-size:12px;color:var(--mut);gap:4px}
 select,input{padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;min-width:170px;font:inherit}
 select[multiple]{min-height:84px}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:18px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
 .kpi b{display:block;font-size:26px;margin-top:4px} .kpi span{color:var(--mut);font-size:12px}
-.grid{display:grid;grid-template-columns:2fr 1fr;gap:14px}
-@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.grid{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px}.g2{grid-template-columns:1fr 1fr}
+@media(max-width:900px){.grid,.g2{grid-template-columns:1fr}}
 h2{font-size:14px;margin:0 0 10px} canvas{max-height:340px}
 footer{color:var(--mut);font-size:12px;margin-top:20px}
 </style>
@@ -34,87 +34,80 @@ footer{color:var(--mut);font-size:12px;margin-top:20px}
 <main>
   <div id="aviso"></div>
   <div class="filtros">
-    <label>Indicador<select id="fInd"></select></label>
+    <label>Métrica<select id="fMet"></select></label>
     <label>Serviço<select id="fSer" multiple></select></label>
     <label>Prestadora<select id="fPre" multiple></select></label>
+    <label>UF<select id="fUf" multiple></select></label>
     <label>De<select id="fDe"></select></label>
     <label>Até<select id="fAte"></select></label>
   </div>
   <div class="kpis">
-    <div class="card kpi"><span>Registros</span><b id="kReg">–</b></div>
-    <div class="card kpi"><span>Prestadoras</span><b id="kPre">–</b></div>
-    <div class="card kpi"><span>Valor médio (indicador)</span><b id="kMed">–</b></div>
-    <div class="card kpi"><span>Último período</span><b id="kUlt">–</b></div>
+    <div class="card kpi"><span>Demandas no período</span><b id="k_demandas">–</b></div>
+    <div class="card kpi"><span>% respondidas</span><b id="k_pct_respondidas">–</b></div>
+    <div class="card kpi"><span>% resolvidas</span><b id="k_pct_resolvidas">–</b></div>
+    <div class="card kpi"><span>% reabertas</span><b id="k_pct_reabertas">–</b></div>
+    <div class="card kpi"><span>Nota média (1–5)</span><b id="k_nota">–</b></div>
+    <div class="card kpi"><span>Prazo médio (dias)</span><b id="k_prazo">–</b></div>
   </div>
   <div class="grid">
-    <div class="card"><h2>Evolução mensal</h2><canvas id="cSerie"></canvas></div>
-    <div class="card"><h2>Ranking por prestadora</h2><canvas id="cRank"></canvas></div>
+    <div class="card"><h2>Evolução mensal — <span class="mt"></span></h2><canvas id="cSerie"></canvas></div>
+    <div class="card"><h2>Por prestadora — <span class="mt"></span></h2><canvas id="cPre"></canvas></div>
   </div>
-  <footer>Dados atualizados automaticamente a cada 2 dias. Licença da base: Creative Commons Attribution (Anatel).</footer>
+  <div class="grid g2">
+    <div class="card"><h2>Por UF — <span class="mt"></span></h2><canvas id="cUf"></canvas></div>
+    <div class="card"><h2>Por assunto — <span class="mt"></span> <small id="nAss"></small></h2><canvas id="cAss"></canvas></div>
+  </div>
+  <footer id="rodape"></footer>
 </main>
 <script>
 const $ = id => document.getElementById(id);
-const fmt = v => v == null ? "–" : Number(v).toLocaleString("pt-BR", {maximumFractionDigits: 2});
-let opcoes = null, charts = {};
+const fmt = (v, d = 2) => v == null ? "–" : Number(v).toLocaleString("pt-BR", {maximumFractionDigits: d});
+let pronto = false, charts = {}, nomes = {};
 
 function params() {
   const q = new URLSearchParams();
   const multi = (el, k) => [...el.selectedOptions].forEach(o => q.append(k, o.value));
-  multi($("fSer"), "servico"); multi($("fPre"), "prestadora");
+  multi($("fSer"), "servico"); multi($("fPre"), "prestadora"); multi($("fUf"), "uf");
   if ($("fDe").value) q.set("de", $("fDe").value);
   if ($("fAte").value) q.set("ate", $("fAte").value);
+  if ($("fMet").value) q.set("metrica", $("fMet").value);
   return q;
 }
+const opts = (el, itens, vazio) => el.innerHTML = (vazio ? `<option value="">${vazio}</option>` : "") +
+  itens.map(i => Array.isArray(i) ? `<option value="${i[0]}">${i[1]}</option>` : `<option>${i}</option>`).join("");
 
-function preencher(el, itens, vazio) {
-  el.innerHTML = (vazio ? `<option value="">${vazio}</option>` : "") +
-    itens.map(i => `<option value="${i}">${i}</option>`).join("");
-}
-
-function desenhar(id, cfg) {
-  charts[id]?.destroy();
-  charts[id] = new Chart($(id), cfg);
-}
+function desenhar(id, cfg) { charts[id]?.destroy(); charts[id] = new Chart($(id), cfg); }
+const barra = (id, itens, horiz = true) => desenhar(id, {type: "bar",
+  data: {labels: itens.map(i => i.nome), datasets: [{data: itens.map(i => i.valor), backgroundColor: "#1f5eff"}]},
+  options: {indexAxis: horiz ? "y" : "x", plugins: {legend: {display: false},
+    tooltip: {callbacks: {afterLabel: c => fmt(itens[c.dataIndex].demandas, 0) + " demandas"}}}}});
 
 async function carregar() {
   const r = await fetch("/api/dados?" + params());
   const d = await r.json();
-  if (d.erro) { $("aviso").style.display = "block"; $("aviso").textContent = "Erro: " + d.erro; return; }
-
-  if (!opcoes) {
-    opcoes = d.opcoes;
-    preencher($("fInd"), opcoes.indicadores);
-    preencher($("fSer"), opcoes.servicos);
-    preencher($("fPre"), opcoes.prestadoras);
-    preencher($("fDe"), opcoes.periodos, "Início");
-    preencher($("fAte"), opcoes.periodos, "Fim");
+  const av = $("aviso");
+  if (d.erro) { av.style.display = "block"; av.textContent = "Erro: " + d.erro; return; }
+  if (!pronto) {
+    pronto = true; nomes = d.metricas;
+    opts($("fMet"), Object.entries(d.metricas));
+    opts($("fSer"), d.opcoes.servicos); opts($("fPre"), d.opcoes.prestadoras); opts($("fUf"), d.opcoes.ufs);
+    opts($("fDe"), d.opcoes.periodos, "Início"); opts($("fAte"), d.opcoes.periodos, "Fim");
   }
-  $("atualizado").textContent = "atualizado em " +
-    new Date(d.meta.atualizado_em).toLocaleString("pt-BR");
-  if (d.meta.amostra) {
-    $("aviso").style.display = "block";
-    $("aviso").textContent = "Atenção: exibindo dados SINTÉTICOS de demonstração. Configure DATA_URL para carregar os dados reais da Anatel.";
-  }
+  document.querySelectorAll(".mt").forEach(e => e.textContent = nomes[d.metrica]);
+  $("atualizado").textContent = "dados de " + d.meta.periodo[0] + " a " + d.meta.periodo[1] +
+    " · atualizado em " + new Date(d.meta.atualizado_em).toLocaleString("pt-BR");
+  $("rodape").textContent = fmt(d.meta.registros_origem, 0) + " registros de origem processados. Atualização automática a cada 2 dias. Licença: Creative Commons Attribution (Anatel).";
+  $("k_demandas").textContent = fmt(d.kpis.demandas, 0);
+  ["pct_respondidas", "pct_resolvidas", "pct_reabertas"].forEach(k => $("k_" + k).textContent = fmt(d.kpis[k]) + "%");
+  $("k_nota").textContent = fmt(d.kpis.nota); $("k_prazo").textContent = fmt(d.kpis.prazo, 1);
+  $("nAss").textContent = d.assunto_disponivel ? "" : "(indisponível com filtro de UF)";
 
-  const ind = $("fInd").value || Object.keys(d.serie)[0];
-  const serie = d.serie[ind] || [], rank = d.ranking[ind] || [];
-  $("kReg").textContent = fmt(d.kpis.registros);
-  $("kPre").textContent = fmt(d.kpis.prestadoras);
-  $("kMed").textContent = fmt(serie.length ? serie.reduce((a, x) => a + x.valor, 0) / serie.length : null);
-  $("kUlt").textContent = serie.length ? serie[serie.length - 1].periodo : "–";
-
-  desenhar("cSerie", {type: "line",
-    data: {labels: serie.map(s => s.periodo),
-           datasets: [{label: ind, data: serie.map(s => s.valor), borderColor: "#1f5eff",
-                       backgroundColor: "#1f5eff22", fill: true, tension: .25}]},
-    options: {plugins: {legend: {display: false}}}});
-  desenhar("cRank", {type: "bar",
-    data: {labels: rank.map(s => s.prestadora),
-           datasets: [{data: rank.map(s => s.valor), backgroundColor: "#1f5eff"}]},
-    options: {indexAxis: "y", plugins: {legend: {display: false}}}});
+  desenhar("cSerie", {type: "line", data: {labels: d.serie.map(s => s.periodo),
+    datasets: [{data: d.serie.map(s => s.valor), borderColor: "#1f5eff", backgroundColor: "#1f5eff22",
+                fill: true, tension: .25, pointRadius: 0}]}, options: {plugins: {legend: {display: false}}}});
+  barra("cPre", d.ranking_prestadora); barra("cUf", d.ranking_uf, false); barra("cAss", d.ranking_assunto);
 }
-
-["fInd", "fSer", "fPre", "fDe", "fAte"].forEach(id => $(id).addEventListener("change", carregar));
+["fMet", "fSer", "fPre", "fUf", "fDe", "fAte"].forEach(id => $(id).addEventListener("change", carregar));
 carregar().catch(e => { $("aviso").style.display = "block"; $("aviso").textContent = "Falha ao carregar: " + e; });
 </script>
 </body>

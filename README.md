@@ -15,23 +15,30 @@ Vercel
 ```
 
 ## Configuração (1x)
-1. No GitHub: **Settings → Secrets and variables → Actions → Variables** → crie `DATA_URL` com o link direto do
-   arquivo ZIP/CSV do recurso "Indicadores de Qualidade de Atendimento" (botão *Baixar* no dados.gov.br).
-2. Rode o workflow **Atualizar dados** (Actions → *Run workflow*) para popular `data/`.
+1. (Opcional) crie a variável `DATA_URL` em Settings → Secrets and variables → Actions → Variables; sem ela o
+   workflow usa o link oficial da Anatel já definido em `atualizar-dados.yml`.
+2. O workflow **Atualizar dados** roda a cada 2 dias e também ao alterar `scripts/etl.py` (ou manualmente).
 3. Na Vercel: **Add New → Project** → importe este repositório (sem build command; output `public`).
 
 ## Rodar localmente
 ```bash
 pip install -r requirements-etl.txt
-python scripts/etl.py --sample                 # dados sintéticos
-DATA_URL="https://..." python scripts/etl.py   # dados reais
+DATA_URL="https://www.anatel.gov.br/dadosabertos/paineis_de_dados/consumidor/indicadores_qualidade_atendimento.zip" python scripts/etl.py
 npx vercel dev                                  # http://localhost:3000
 ```
 
-## Sobre o ETL
-O esquema do arquivo é detectado por apelidos de colunas (`ALIASES` em `scripts/etl.py`): período
-(ou ano+mês), prestadora, serviço, indicador, valor. Arquivos "largos" (uma coluna por indicador) são
-convertidos automaticamente. Se o layout real divergir, ajuste `ALIASES`.
+## Sobre os dados e o ETL
+O arquivo da Anatel (`AnatelConsumidorReclamacoesCSV.csv`, ~2,4 GB, uma linha por demanda) é agregado com
+**DuckDB** em ~30 s por `scripts/etl.py`, gerando `data/por_uf.json.gz` e `data/por_assunto.json.gz`
+(mês × serviço × prestadora × UF/assunto, com somas e contagens). A API calcula os indicadores a partir delas:
 
-> Os arquivos em `data/` do primeiro commit são **sintéticos** (o dashboard exibe um aviso).
-> Serão substituídos pelos dados reais na primeira execução do workflow com `DATA_URL`.
+| Métrica | Definição |
+|---|---|
+| Reclamações | demandas com `TIPO_ATENDIMENTO = Reclamação` |
+| % respondidas | `RESPONDIDA = S` ÷ demandas |
+| % resolvidas | `RESOLVIDA = S` ÷ demandas avaliadas (`S` ou `N`) |
+| % reabertas | `REABERTA = S` ÷ demandas |
+| Nota média | média de `NOTA_CONSUMIDOR` (1–5) |
+| Prazo médio | média de `PrazoResposta` nas respondidas |
+
+Se o ZIP não mudou (sha256), o ETL sai sem reprocessar.
