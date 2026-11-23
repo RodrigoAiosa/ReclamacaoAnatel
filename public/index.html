@@ -396,6 +396,8 @@ function externo(fn, classe) {
   }};
 }
 function grafico(id, cfg) { charts[id]?.destroy(); charts[id] = new Chart($(id), cfg); }
+/* quebra o rótulo em linhas de até n caracteres (sem cortar palavras nem usar reticências) */
+const quebra = (s, n = 26) => { const L = []; let c = ""; for (const w of s.split(" ")) { if (c && (c + " " + w).length > n) { L.push(c); c = w; } else c = c ? c + " " + w : w; } if (c) L.push(c); return L; };
 const corta = (s, n) => s.length > n ? s.slice(0, n - 1) + "…" : s;
 function barras(id, itens, tooltipFn, horiz) {
   grafico(id, {type: "bar", plugins: [rotulos],
@@ -405,7 +407,7 @@ function barras(id, itens, tooltipFn, horiz) {
       scales: {x: {display: !horiz, grid: {display: false}, border: {display: false}, ticks: {color: "#222", font: {size: 12}, maxRotation: 0,
                     callback: function (v) { const l = this.getLabelForValue(v); return l.length > 12 ? l.split(" ") : l; }}},
                y: {display: horiz, beginAtZero: true, grid: {display: false}, border: {display: false}, ticks: {color: "#222", font: {size: 12},
-                    callback: function (v) { return horiz ? corta(this.getLabelForValue(v), 30) : ""; }}}}}});
+                    callback: function (v) { return horiz ? quebra(this.getLabelForValue(v), 28) : ""; }}}}}});
 }
 ["cOp", "cAss", "cMes", "cSv", "cTmr", "cEv", "cReab", "cDisp", "cNota"].forEach(id => $(id).addEventListener("mouseleave", esconderTip));
 
@@ -540,9 +542,9 @@ function renderServicos() {
   const dsp = {type: "scatter", plugins: [rotPontos],
     data: {datasets: [{data: O.map(o => ({x: o.total, y: o.sat.satisfeitos})), pointRadius: 7, pointHoverRadius: 9, borderColor: "#fff", borderWidth: 1.5,
       backgroundColor: O.map(o => COR_NIVEL[o.sat.nivel] || "#aab4ae")}]},
-    options: {maintainAspectRatio: false, layout: {padding: {right: 40}},
+    options: {maintainAspectRatio: false, layout: {padding: {right: 66, top: 8}},
       plugins: {legend: {display: false}, tooltip: dsExterno(i => tipSatisfacao(O[i].nome, O[i].sat, ` · ${num(O[i].total)} reclamações`))},
-      scales: {x: {type: "logarithmic", title: {display: true, text: "Reclamações (escala log)", color: "#666"}, grid: {color: "#e6eee9"}, ticks: {callback: v => [1, 2, 5].includes(+String(v)[0]) && String(v).replace(/0/g, "").length === 1 ? compacto(v) : ""}},
+      scales: {x: {type: "logarithmic", title: {display: true, text: "Reclamações (escala log)", color: "#666"}, grid: {color: "#e6eee9"}, ticks: {maxRotation: 0, autoSkip: false, callback: v => [1].includes(+String(v)[0]) && String(v).replace(/0/g, "").length === 1 ? compacto(v) : ""}},
                y: {title: {display: true, text: "% satisfeitos", color: "#666"}, grid: {color: "#e6eee9"}, ticks: {callback: v => v + "%"}}}}};
   grafico("cDisp", dsp); charts.cDisp.$nomes = O.map((o, i) => top.includes(i) ? o.nome : ""); charts.cDisp.update("none");
 }
