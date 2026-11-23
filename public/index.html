@@ -211,8 +211,8 @@ footer{font-size:11px;color:#4f6c5e;margin:10px 4px 0;text-align:center}
           <div class="card"><h2>Tempo Médio de Resposta por Serviço</h2><div class="sub">Dias até a resposta · linha tracejada = média geral</div><div class="cv"><canvas id="cTmr"></canvas></div></div>
         </div>
         <div class="g g2">
-          <div class="card"><h2>Assuntos por Serviço</h2><div class="sub">Os 8 principais assuntos, divididos por serviço <span id="aviAs"></span></div><div class="cv" style="height:340px"><canvas id="cAs"></canvas></div></div>
-          <div class="card"><h2>Evolução Mensal por Serviço</h2><div class="sub">Reclamações por mês — passe o mouse para ver todos os serviços no mês</div><div class="cv" style="height:340px"><canvas id="cEv"></canvas></div></div>
+          <div class="card"><h2>Assuntos por Serviço</h2><div class="sub">Composição dos assuntos dentro de cada serviço (100% = reclamações do serviço) <span id="aviAs"></span></div><div class="cv" style="height:380px"><canvas id="cAs"></canvas></div></div>
+          <div class="card"><h2>Evolução Mensal por Serviço</h2><div class="sub">Reclamações por mês — passe o mouse para ver todos os serviços no mês</div><div class="cv" style="height:380px"><canvas id="cEv"></canvas></div></div>
         </div>
         <div class="g"><div class="card"><h2>Mapa de Calor: Operadora × Assunto</h2><div class="sub">Onde cada operadora concentra suas reclamações (% do total da operadora) · as 10 maiores operadoras <span class="avi">(ignora o filtro de Operadora)</span></div>
           <div class="heat"><div class="hg" id="heat"></div></div><div class="leg2"><span>0%</span><i></i><span id="heatMax"></span></div></div></div>
@@ -403,15 +403,21 @@ function renderServicos() {
       scales: {x: {grid: {display: false}, border: {display: false}, ticks: {color: "#222", font: {size: 12}, maxRotation: 0, callback: function (v) { const l = this.getLabelForValue(v); return l.length > 12 ? l.split(" ") : l; }}},
                y: {display: false, beginAtZero: true}}}});
 
-  const A = S.assunto_servico;
-  grafico("cAs", {type: "bar",
-    data: {labels: A.assuntos.map(a => curto(a, 26)), datasets: A.servicos.map((n, j) => ({label: n, data: A.valores.map(v => v[j]), backgroundColor: corSv(n), borderWidth: 0}))},
+  const A = S.assunto_servico, nSv = A.servicos.length, PA = ["#1f6b46", "#2e9d5b", "#8bc34a", "#f4a261", "#e76f51", "#1f7bff", "#8e6bbf", "#2a9d8f"];
+  const nomesAs = [...A.assuntos, "Outros assuntos"], corAs = i => i < PA.length ? PA[i] : "#b8c4bd";
+  // matriz [assunto][serviço] em volume; "Outros" = total do serviço − os 8 principais
+  const vol = nomesAs.map((_, i) => A.servicos.map((_, j) => i < A.assuntos.length ? A.valores[i][j] : Math.max(0, A.totais_servico[j] - A.valores.reduce((t, v) => t + v[j], 0))));
+  const pctSv = (i, j) => A.totais_servico[j] ? 100 * vol[i][j] / A.totais_servico[j] : 0;
+  const rotSeg = {id: "rotSeg", afterDatasetsDraw(c) { const {ctx} = c; ctx.save(); ctx.font = "600 11px Segoe UI"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    c.data.datasets.forEach((ds, di) => c.getDatasetMeta(di).data.forEach((b, j) => { const v = ds.data[j]; if (v >= 7 && b.width > 26) { ctx.fillStyle = [2, 3].includes(di) ? "#1d2b24" : "#fff"; ctx.fillText(num(v, 0) + "%", b.x - b.width / 2, b.y); } })); ctx.restore(); }};
+  grafico("cAs", {type: "bar", plugins: [rotSeg],
+    data: {labels: A.servicos, datasets: nomesAs.map((n, i) => ({label: curto(n, 24), data: A.servicos.map((_, j) => pctSv(i, j)), backgroundColor: corAs(i), borderColor: "#fff", borderWidth: 1.5}))},
     options: {indexAxis: "y", maintainAspectRatio: false, interaction: {mode: "nearest", intersect: true},
       plugins: {legend: {position: "bottom", labels: {boxWidth: 10, font: {size: 11}}},
-        tooltip: dsExterno((i, j) => { const n = A.valores[i][j], tot = A.totais[i];
-          return tipKV(A.assuntos[i], `${num(tot)} reclamações no assunto`, A.servicos.map((sv, k) => [sv, `${num(A.valores[i][k])} · ${pc(tot ? 100 * A.valores[i][k] / tot : null)}`, corSv(sv)]),
-            `Em destaque: <b>${A.servicos[j]}</b> — ${num(n)} (${pc(tot ? 100 * n / tot : null)} do assunto)`); })},
-      scales: {x: {stacked: true, grid: {color: "#e6eee9"}, ticks: {callback: v => compacto(v)}}, y: {stacked: true, grid: {display: false}, ticks: {color: "#222", font: {size: 11}}}}}});
+        tooltip: dsExterno((j, i) => tipKV(A.servicos[j], `${num(A.totais_servico[j])} reclamações no serviço`,
+          nomesAs.map((n, k) => k).sort((x, y) => vol[y][j] - vol[x][j]).map(k => [curto(nomesAs[k], 60), `${num(vol[k][j])} · ${pc(pctSv(k, j))}`, corAs(k)]),
+          `Em destaque: <b>${nomesAs[i]}</b> — ${pc(pctSv(i, j))} do serviço`))},
+      scales: {x: {stacked: true, min: 0, max: 100, grid: {color: "#e6eee9"}, ticks: {callback: v => v + "%"}}, y: {stacked: true, grid: {display: false}, ticks: {color: "#222", font: {size: 12}}}}}});
 
   const E = S.evolucao;
   grafico("cEv", {type: "line",

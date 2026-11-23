@@ -102,20 +102,21 @@ def _bloco_servicos(A, B, ano, mes, pr, uf, sv, base, no_ano, no_mes, z):
     periodos = sorted({p for d in serie_sv.values() for p in d})
     evolucao = {"periodos": periodos, "series": [{"nome": n, "valores": [int(serie_sv[n].get(p, 0)) for p in periodos]} for n in nomes]}
 
-    a_sv, a_tot = defaultdict(lambda: defaultdict(float)), defaultdict(float)
+    a_sv, a_tot, sv_tot = defaultdict(lambda: defaultdict(float)), defaultdict(float), defaultdict(float)
     heat, op_tot, as_tot = defaultdict(lambda: [0.0, 0.0, 0.0]), defaultdict(float), defaultdict(float)
     for r in B:
         if not no_ano(r) or not no_mes(r):
             continue
         if not pr or r[2] == pr:                             # assunto × serviço respeita operadora
-            a_sv[r[3]][r[1]] += r[4]; a_tot[r[3]] += r[4]
+            a_sv[r[3]][r[1]] += r[4]; a_tot[r[3]] += r[4]; sv_tot[r[1]] += r[4]
         if not sv or r[1] == sv:                             # mapa respeita serviço, ignora operadora
             h = heat[(r[2], r[3])]
             h[0] += r[4]; h[1] += r[7]; h[2] += r[8]         # dem, resol, aval
             op_tot[r[2]] += r[4]; as_tot[r[3]] += r[4]
     top_as = [k for k, _ in sorted(a_tot.items(), key=lambda x: -x[1])[:8]]
     assunto_servico = {"assuntos": top_as, "servicos": nomes,
-                       "valores": [[int(a_sv[a].get(n, 0)) for n in nomes] for a in top_as], "totais": [int(a_tot[a]) for a in top_as]}
+                       "valores": [[int(a_sv[a].get(n, 0)) for n in nomes] for a in top_as], "totais": [int(a_tot[a]) for a in top_as],
+                       "totais_servico": [int(sv_tot[n]) for n in nomes]}
     ops = [k for k, _ in sorted(op_tot.items(), key=lambda x: -x[1])[:10]]
     ass = [k for k, _ in sorted(as_tot.items(), key=lambda x: -x[1])[:8]]
     celulas = []
