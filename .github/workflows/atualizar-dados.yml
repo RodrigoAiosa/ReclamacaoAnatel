@@ -19,6 +19,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+          cache-dependency-path: requirements-etl.txt
       - run: pip install -r requirements-etl.txt
       - name: Rodar ETL
         env:
