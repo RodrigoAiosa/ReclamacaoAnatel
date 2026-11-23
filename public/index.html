@@ -82,16 +82,28 @@ footer{font-size:11px;color:#4f6c5e;margin:10px 4px 0;text-align:center}
 .pane{display:none}.pane.on{display:block}
 @media(max-width:1100px){.moldura{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr}.tabs{right:10px;top:12px}}
 @media(max-width:600px){.kpis{grid-template-columns:repeat(2,1fr)}}
-.capa{max-width:1500px;margin:0 auto;padding:22px 22px 0;container-type:inline-size;position:relative;cursor:pointer}
+.capa{max-width:1500px;margin:0 auto;padding:22px 22px 0;container-type:inline-size;position:relative}
+.capa .wrap{position:relative}
 .capa img{width:100%;height:auto;display:block;border-radius:18px;box-shadow:0 4px 18px #0003}
-.capa .data{position:absolute;left:22px;right:22px;bottom:.7cqw;text-align:center;font-size:1.65cqw;color:#1a1a1a;pointer-events:none}
+.capa .data{position:absolute;left:0;right:0;bottom:.7cqw;text-align:center;font-size:1.65cqw;color:#1a1a1a;pointer-events:none}
 .capa .data:empty{display:none}
+.capa .btn{position:absolute;left:74.3%;top:74.7%;width:22.8%;height:8.5%;display:flex;align-items:center;justify-content:center;gap:.9cqw;
+  background:#619376;color:#fff;border-radius:1.1cqw;font-size:2.3cqw;font-weight:500;letter-spacing:.2px;text-decoration:none;
+  box-shadow:0 .2cqw .6cqw #0003;transition:background .15s,transform .15s}
+.capa .btn:hover{background:#4f8266;transform:translateY(-1px)}
+.capa .btn:focus-visible{outline:3px solid #1f6b46;outline-offset:3px}
+.capa .btn svg{width:1.7cqw;height:1.7cqw}
+#painel{display:none}
 </style>
 </head>
 <body>
 <section class="capa" id="capa" aria-label="Capa">
-  <img src="capa.jpg" alt="Dashboard Anatel — Indicadores de Reclamações" width="1590" height="892">
-  <div class="data" id="capaData"></div>
+  <div class="wrap">
+    <img src="capa.jpg" alt="Dashboard Anatel — Indicadores de Reclamações" width="1590" height="892">
+    <a class="btn" href="#painel">Acessar o Painel
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4l8 8-8 8"/></svg></a>
+    <div class="data" id="capaData"></div>
+  </div>
 </section>
 <div class="app" id="painel">
   <div class="tabs">
@@ -306,7 +318,13 @@ async function carregar() {
   render();
   if (D.ultima_data) { const [a, m, d] = D.ultima_data.split("-"); $("capaData").textContent = `Dados atualizado em (Data Abertura) : ${d}/${m}/${a}`; }
 }
-$("capa").addEventListener("click", () => $("painel").scrollIntoView({behavior: "smooth"}));
+function rota() {
+  const painel = location.hash === "#painel";
+  $("capa").style.display = painel ? "none" : "block"; $("painel").style.display = painel ? "block" : "none";
+  window.scrollTo(0, 0);
+  if (painel) requestAnimationFrame(() => Object.values(charts).forEach(c => c.resize()));
+}
+addEventListener("hashchange", rota); rota();
 ["fAno", "fMes", "fSer", "fPre", "fUf"].forEach(id => $(id).addEventListener("change", carregar));
 document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
   document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === t));
