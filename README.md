@@ -6,7 +6,7 @@ Python + Vercel.
 
 ## Arquitetura
 ```
-GitHub Actions (cron, a cada 2 dias)
+GitHub Actions (cron diário; reprocessa só quando a Anatel publica dados novos)
   └─ scripts/etl.py  → baixa o ZIP (DATA_URL), normaliza → data/registros.json + data/meta.json
         └─ commit → Vercel faz novo deploy
 Vercel
@@ -17,7 +17,7 @@ Vercel
 ## Configuração (1x)
 1. (Opcional) crie a variável `DATA_URL` em Settings → Secrets and variables → Actions → Variables; sem ela o
    workflow usa o link oficial da Anatel já definido em `atualizar-dados.yml`.
-2. O workflow **Atualizar dados** roda a cada 2 dias e também ao alterar `scripts/etl.py` (ou manualmente).
+2. O workflow **Atualizar dados** verifica a fonte todo dia (06:43 UTC) e reprocessa apenas se o arquivo mudou — a Anatel atualiza a base a cada ~2 dias —, e também roda ao alterar `scripts/etl.py` (ou manualmente).
 3. Na Vercel: **Add New → Project** → importe este repositório (sem build command; output `public`).
 
 ## Rodar localmente

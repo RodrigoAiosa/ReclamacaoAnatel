@@ -498,7 +498,7 @@ function renderMetodologia() {
     ["Última data de abertura", D.ultima_data ? D.ultima_data.split("-").reverse().join("/") : "–"],
     ["Dados processados em", new Date(m.atualizado_em).toLocaleString("pt-BR")],
     ["Fonte verificada em", new Date(m.verificado_em).toLocaleString("pt-BR")],
-    ["Frequência", "Verificação automática a cada 2 dias (GitHub Actions); se há dados novos, o painel é republicado sozinho."]
+    ["Frequência", "Verificação automática diária (GitHub Actions, 03:43 em Brasília); a Anatel atualiza a base a cada ~2 dias e, se há dados novos, o painel é republicado sozinho. Cada verificação fica registrada no log de atualizações."]
   ].map(([t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join("");
   $("limites").innerHTML = [
     "A nota e o % de resolvidas vêm só de quem avaliou o atendimento; o número de avaliações é menor que o de reclamações.",
@@ -556,7 +556,7 @@ function render() {
 
   renderServicos(); renderMetodologia();
   const m = D.meta;
-  $("rodape").textContent = `${num(m.registros_origem)} registros de origem · ${m.periodo[0]} a ${m.periodo[1]} · dados processados em ${new Date(m.atualizado_em).toLocaleString("pt-BR")} · fonte verificada em ${new Date(m.verificado_em).toLocaleString("pt-BR")} · verificação automática a cada 2 dias · Licença: Creative Commons Attribution (Anatel)`;
+  $("rodape").textContent = `${num(m.registros_origem)} registros de origem · ${m.periodo[0]} a ${m.periodo[1]} · dados processados em ${new Date(m.atualizado_em).toLocaleString("pt-BR")} · fonte verificada em ${new Date(m.verificado_em).toLocaleString("pt-BR")} · verificação automática diária · Licença: Creative Commons Attribution (Anatel)`;
 }
 
 function ligarTabelas() {
