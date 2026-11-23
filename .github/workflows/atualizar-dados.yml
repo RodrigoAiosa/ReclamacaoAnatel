@@ -5,7 +5,7 @@ on:
     - cron: "17 6 */2 * *"   # 06:17 UTC, dias ímpares do mês (~a cada 2 dias)
   workflow_dispatch:
   push:
-    paths: [".github/workflows/atualizar-dados.yml"]
+    paths: [".github/workflows/atualizar-dados.yml", "scripts/etl.py"]
 
 permissions:
   contents: write
