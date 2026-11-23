@@ -74,28 +74,53 @@ def read_bytes(args) -> tuple[bytes, str]:
     return bytes(buf), url
 
 
-def read_tables(raw: bytes, name: str) -> list[pd.DataFrame]:
-    blobs = []
-    if raw[:2] == b"PK":
-        with zipfile.ZipFile(io.BytesIO(raw)) as z:
-            for n in z.namelist():
-                if n.lower().endswith((".csv", ".txt")):
-                    blobs.append(z.read(n))
-    else:
-        blobs.append(raw)
-    if not blobs:
+def iter_chunks(raw: bytes, chunksize: int = 300_000):
+    """Lê cada CSV do ZIP em blocos (arquivos grandes) e imprime esquema/amostra no log."""
+    def abrir():
+        if raw[:2] == b"PK":
+            z = zipfile.ZipFile(io.BytesIO(raw))
+            for info in z.infolist():
+                if info.filename.lower().endswith((".csv", ".txt")):
+                    print(f"Arquivo: {info.filename} · {info.file_size >> 20} MB descompactado", flush=True)
+                    yield info.filename, z.open(info)
+        else:
+            yield "dados.csv", io.BytesIO(raw)
+
+    achou = False
+    for nome, f in abrir():
+        achou = True
+        head = f.read(1 << 20)
+        try:
+            head.decode("utf-8")
+            enc = "utf-8-sig"
+        except UnicodeDecodeError as e:
+            enc = "utf-8-sig" if e.start > len(head) - 4 else "latin-1"
+        txt = head.decode(enc, errors="replace")
+        linha1 = txt.splitlines()[0] if txt else ""
+        sep = ";" if linha1.count(";") >= linha1.count(",") else ","
+        print(f"Codificação={enc} separador={sep!r}\nCabeçalho: {linha1}", flush=True)
+        for l in txt.splitlines()[1:4]:
+            print("  amostra:", l[:300], flush=True)
+        f2 = io.BufferedReader(_Prefixed(head, f))
+        for ch in pd.read_csv(f2, sep=sep, dtype=str, keep_default_na=False, encoding=enc,
+                              encoding_errors="replace", chunksize=chunksize):
+            yield ch
+    if not achou:
         sys.exit("Nenhum CSV encontrado no arquivo.")
-    out = []
-    for b in blobs:
-        for enc in ("utf-8-sig", "latin-1"):
-            try:
-                text = b.decode(enc)
-                break
-            except UnicodeDecodeError:
-                continue
-        sep = ";" if text[:2000].count(";") >= text[:2000].count(",") else ","
-        out.append(pd.read_csv(io.StringIO(text), sep=sep, dtype=str, keep_default_na=False))
-    return out
+
+
+class _Prefixed(io.RawIOBase):
+    """Devolve `head` já lido e depois continua a leitura de `rest`."""
+    def __init__(self, head, rest):
+        self.buf, self.rest = head, rest
+    def readable(self):
+        return True
+    def readinto(self, b):
+        if self.buf:
+            n = min(len(b), len(self.buf)); b[:n] = self.buf[:n]; self.buf = self.buf[n:]
+            return n
+        d = self.rest.read(len(b)); b[:len(d)] = d
+        return len(d)
 
 
 def to_num(s: pd.Series) -> pd.Series:
@@ -184,7 +209,16 @@ def main() -> None:
     else:
         raw, origem = read_bytes(args)
         digest = hashlib.sha256(raw).hexdigest()
-        df = pd.concat([normalize(t) for t in read_tables(raw, origem)], ignore_index=True)
+        print('Esquema detectado a partir do primeiro bloco…', flush=True)
+        parts, n = [], 0
+        for ch in iter_chunks(raw):
+            g = normalize(ch).groupby(DIMS)["valor"].agg(["sum", "count"])
+            parts.append(g); n += len(ch)
+            if len(parts) >= 10:
+                parts = [pd.concat(parts).groupby(level=list(range(len(DIMS)))).sum()]
+            print(f"  {n:,} linhas lidas".replace(",", "."), flush=True)
+        tot = pd.concat(parts).groupby(level=list(range(len(DIMS)))).sum()
+        df = (tot["sum"] / tot["count"]).rename("valor").reset_index()
         is_sample = False
 
     df = df.groupby(DIMS, as_index=False)["valor"].mean().round(4)
