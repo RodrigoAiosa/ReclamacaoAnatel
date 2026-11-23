@@ -91,6 +91,12 @@ def gravar(nome: str, cols: list[str], rows: list[tuple]) -> int:
     return len(rows)
 
 
+def marcar_verificacao(mudou: bool):
+    """Registra que o workflow checou a fonte (mesmo sem dados novos)."""
+    (DATA / "verificacao.json").write_text(json.dumps({
+        "verificado_em": datetime.now(timezone.utc).isoformat(timespec="seconds"), "dados_novos": mudou}), encoding="utf-8")
+
+
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--file"); ap.add_argument("--force", action="store_true")
     args = ap.parse_args()
@@ -100,7 +106,8 @@ def main():
     meta_p = DATA / "meta.json"
     if not args.force and meta_p.exists() and json.loads(meta_p.read_text()).get("sha256") == digest \
             and json.loads(meta_p.read_text()).get("versao") == VERSAO:
-        log("arquivo inalterado desde a última execução; nada a fazer."); return
+        log("arquivo inalterado desde a última execução; nada a reprocessar.")
+        marcar_verificacao(False); return
 
     csv = extrair_csv(zp)
     con = duckdb.connect()
@@ -129,6 +136,7 @@ def main():
         "origem": os.environ.get("DATA_URL", str(args.file)), "sha256": digest,
         "registros_origem": n, "periodo": [mn, mx], "linhas_agregadas": n1 + n2 + n3, "versao": VERSAO, "medidas": MEDIDAS,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
+    marcar_verificacao(True)
     log(f"concluído ({mn} → {mx})")
 
 

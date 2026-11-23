@@ -283,7 +283,7 @@ function render() {
     D.operadoras.map((r, i) => `<tr data-i="${i}"><td>${r.nome}</td><td>${num(r.total)}</td><td>${pc(r.pct_respondidas)}</td><td>${pc(r.pct_resolvidas)}</td><td>${num(r.tmr, 1)}</td><td>${num(r.sat.nota, 2)}</td><td class="pos">${pc(r.sat.satisfeitos, 0)}</td><td class="neg">${pc(r.sat.insatisfeitos, 0)}</td></tr>`).join("") + "</tbody>";
 
   const m = D.meta;
-  $("rodape").textContent = `${num(m.registros_origem)} registros de origem · ${m.periodo[0]} a ${m.periodo[1]} · atualizado em ${new Date(m.atualizado_em).toLocaleString("pt-BR")} · atualização automática a cada 2 dias · Licença: Creative Commons Attribution (Anatel)`;
+  $("rodape").textContent = `${num(m.registros_origem)} registros de origem · ${m.periodo[0]} a ${m.periodo[1]} · dados processados em ${new Date(m.atualizado_em).toLocaleString("pt-BR")} · fonte verificada em ${new Date(m.verificado_em).toLocaleString("pt-BR")} · verificação automática a cada 2 dias · Licença: Creative Commons Attribution (Anatel)`;
 }
 
 function ligarTabelas() {

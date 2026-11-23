@@ -136,6 +136,10 @@ def montar(q):
             v = dia_acc[d]
             lst.append({"dia": d, "total": v[0], "respondida": v[1], "resolvida": v[2], "pct": _div(v[2], v[0], 100, 2)})
     meta = json.loads((DATA / "meta.json").read_text(encoding="utf-8"))
+    try:                                        # última checagem do workflow (opcional)
+        meta["verificado_em"] = json.loads((DATA / "verificacao.json").read_text(encoding="utf-8"))["verificado_em"]
+    except (FileNotFoundError, KeyError, ValueError):
+        meta["verificado_em"] = meta.get("atualizado_em")
     return {
         "meta": meta,
         "opcoes": {"anos": sorted({r[0][:4] for r in A}, reverse=True), "servicos": sorted({r[1] for r in A}),
