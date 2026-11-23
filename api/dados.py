@@ -79,7 +79,7 @@ def montar(q):
         "meta": _meta(), "metricas": METRICAS, "metrica": metrica, "opcoes": opcoes,
         "kpis": {"demandas": int(total[0]), **{k: valor(total, k) for k in METRICAS}},
         "serie": [{"periodo": k, "valor": valor(v, metrica)} for k, v in sorted(serie.items())],
-        "ranking_prestadora": top(rank_p), "ranking_uf": top(rank_u, 27, 50),
+        "ranking_prestadora": top(rank_p, 12, max(200, total[0] * 0.005)), "ranking_uf": top(rank_u, 27, 50),
         "ranking_assunto": top(rank_a, 12), "assunto_disponivel": not uf,
     }
 
