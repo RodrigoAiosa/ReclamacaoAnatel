@@ -14,7 +14,8 @@ import duckdb
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
-MEDIDAS = ["dem", "rec", "resp", "resol", "aval", "reab", "nota_n", "nota_sum", "prazo_n", "prazo_sum"]
+MEDIDAS = ["dem", "rec", "resp", "resol", "aval", "reab", "nota_n", "nota_sum", "prazo_n", "prazo_sum",
+           "n1", "n2", "n3", "n4", "n5"]
 T0 = time.time()
 log = lambda *a: print(f"[{time.time() - T0:5.0f}s]", *a, flush=True)
 
@@ -39,7 +40,9 @@ WHERE regexp_matches(DATA_ABERTURA, '^[0-9]{{4}}-[0-9]{{2}}')
 AGG = """
 SELECT {dims}, count(*) dem, sum(rec::INT) rec, sum(resp::INT) resp, sum(resol::INT) resol,
        sum(aval::INT) aval, sum(reab::INT) reab, count(nota) nota_n, coalesce(sum(nota),0) nota_sum,
-       count(prazo) FILTER (WHERE resp) prazo_n, coalesce(sum(prazo) FILTER (WHERE resp),0) prazo_sum
+       count(prazo) FILTER (WHERE resp) prazo_n, coalesce(sum(prazo) FILTER (WHERE resp),0) prazo_sum,
+       count(*) FILTER (WHERE nota = 1) n1, count(*) FILTER (WHERE nota = 2) n2, count(*) FILTER (WHERE nota = 3) n3,
+       count(*) FILTER (WHERE nota = 4) n4, count(*) FILTER (WHERE nota = 5) n5
 FROM base GROUP BY ALL ORDER BY ALL
 """
 
@@ -89,7 +92,8 @@ def main():
     zp = obter_zip(args)
     digest = hashlib.sha256(zp.read_bytes()).hexdigest() if zp.stat().st_size < (1 << 31) else "grande"
     meta_p = DATA / "meta.json"
-    if not args.force and meta_p.exists() and json.loads(meta_p.read_text()).get("sha256") == digest:
+    if not args.force and meta_p.exists() and json.loads(meta_p.read_text()).get("sha256") == digest \
+            and json.loads(meta_p.read_text()).get("medidas") == MEDIDAS:
         log("arquivo inalterado desde a última execução; nada a fazer."); return
 
     csv = extrair_csv(zp)

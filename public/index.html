@@ -3,111 +3,293 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Reclamações Anatel — Indicadores de Qualidade de Atendimento</title>
+<title>Relatório de Reclamações — Telecom (dados abertos Anatel)</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
-:root{--bg:#f4f6fa;--card:#fff;--ink:#1c2533;--mut:#667085;--line:#e4e7ec;--brand:#1f5eff}
+:root{--verde:#1f6b46;--verde2:#2e7d4f;--card:#f5f8f6;--ink:#1d2b24;--mut:#6f8a7b;--linha:#dbe6df;--azul:#1f7bff}
 *{box-sizing:border-box}
-body{margin:0;font:14px/1.45 system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
-header{background:#0f1b3d;color:#fff;padding:18px 28px}
-header h1{margin:0;font-size:20px} header p{margin:4px 0 0;color:#b8c3e0;font-size:13px}
-main{max-width:1300px;margin:0 auto;padding:20px 28px 40px}
-#aviso{display:none;background:#fff4e5;border:1px solid #f5b64a;color:#7a4b00;padding:10px 14px;border-radius:8px;margin-bottom:16px}
-.filtros{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:18px}
-.filtros label{display:flex;flex-direction:column;font-size:12px;color:var(--mut);gap:4px}
-select,input{padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;min-width:170px;font:inherit}
-select[multiple]{min-height:84px}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
-.kpi b{display:block;font-size:26px;margin-top:4px} .kpi span{color:var(--mut);font-size:12px}
-.grid{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px}.g2{grid-template-columns:1fr 1fr}
-@media(max-width:900px){.grid,.g2{grid-template-columns:1fr}}
-h2{font-size:14px;margin:0 0 10px} canvas{max-height:340px}
-footer{color:var(--mut);font-size:12px;margin-top:20px}
+body{margin:0;font:14px/1.4 "Segoe UI",system-ui,sans-serif;color:var(--ink);
+  background:linear-gradient(180deg,#a9cbb6 0%,#cfe3d6 60%,#dcebe1 100%);min-height:100vh}
+.app{max-width:1500px;margin:0 auto;padding:46px 22px 24px;position:relative}
+.moldura{border:3px solid var(--verde);border-radius:26px;background:#e4efe8;padding:14px;display:grid;grid-template-columns:250px 1fr;gap:14px;position:relative}
+.tabs{position:absolute;top:12px;right:60px;display:flex;gap:4px}
+.tab{padding:7px 22px;border-radius:14px 14px 0 0;background:#c3dccb;color:#8aa89a;border:3px solid var(--verde);border-bottom:0;cursor:pointer;font-weight:600;font-size:13px}
+.tab.on{background:#e4efe8;color:var(--verde2)}
+aside{background:var(--verde);border-radius:18px;padding:18px 14px;color:#fff;display:flex;flex-direction:column;gap:6px}
+aside h1{font-size:14px;letter-spacing:.3px;margin:2px 0 10px;font-weight:600}
+.marca{background:#fff;border-radius:6px;padding:14px 10px;color:var(--verde);font-weight:800;font-size:19px;text-align:center;letter-spacing:.5px;margin-bottom:12px}
+.marca small{display:block;font-weight:600;font-size:11px;color:#5f8a72;letter-spacing:0}
+aside label{font-size:15px;margin-top:10px;font-weight:500}
+aside select{width:100%;padding:8px 9px;border:2px solid #fff;border-radius:4px;background:#fff;color:#111;font:inherit;margin-top:4px}
+.dica{margin-top:auto;font-size:11px;color:#bcd8c7;line-height:1.35}
+main{min-width:0}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:12px}
+.card{background:var(--card);border-radius:12px;box-shadow:0 1px 4px #0002,inset 0 0 0 1px #fff8;padding:12px 14px;min-width:0}
+.kpi{display:flex;flex-direction:column;height:100px}
+.kpi .t{font-size:12px;color:var(--mut);line-height:1.15;display:flex;justify-content:space-between;gap:6px}
+.kpi .v{flex:1;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:500;position:relative}
+.kpi .v:before{content:"";position:absolute;left:0;top:14%;bottom:14%;width:6px;border-radius:3px;background:#6fae8a}
+.g{display:grid;gap:12px;margin-bottom:12px}
+.g2{grid-template-columns:1fr 1fr}
+.card h2{margin:0;font-size:19px;color:var(--verde2);font-weight:600}
+.card .sub{font-size:12px;color:var(--mut);margin:1px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--linha)}
+.cv{position:relative;height:300px}
+.sat{background:#fff;border-radius:8px;padding:12px;height:300px;overflow:auto}
+.sat .tt{text-align:center;font-size:19px}
+.sat .tt small{display:block;color:var(--mut);font-size:11px;margin-top:1px}
+.mini{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
+.mini div{border:1px solid var(--linha);border-radius:6px;padding:6px 8px}
+.mini span{font-size:11px;color:var(--mut);display:block}
+.mini b{font-size:20px;display:block;margin-top:2px}
+.mini i{font-size:10px;font-style:normal;color:var(--mut)}
+.pos{color:#2e9d5b}.neg{color:#e0382d}.azul{color:var(--azul)}
+.emo{display:grid;grid-template-columns:repeat(5,1fr);text-align:center;gap:4px;margin-top:6px}
+.emo .e{font-size:20px}.emo .l{font-size:10px;color:#333}.emo b{display:block;font-size:13px;margin-top:2px}.emo small{font-size:9px;color:#444}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11px;color:var(--mut);text-align:right;font-weight:600;padding:6px 8px;border-bottom:2px solid var(--linha)}
+td{padding:7px 8px;border-bottom:1px solid var(--linha);text-align:right}
+th:first-child,td:first-child{text-align:left}
+tbody tr:hover{background:#e9f3ed}
+.tag{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px;background:#efe3c8;color:#7a5a12}
+#tip{position:fixed;z-index:50;pointer-events:none;background:#fff;border:1px solid #ddd;border-radius:6px;box-shadow:0 6px 22px #0003;padding:12px 14px;width:340px;display:none;font-size:12px}
+#tip.wide{width:300px}
+#tip h3{margin:0;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+#tip .s{color:var(--mut);font-size:11px;margin:2px 0 8px}
+#tip .cols{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #eee;border-bottom:1px solid #eee;margin:6px -14px;padding:6px 14px}
+#tip .cols span{font-size:9px;color:var(--mut);display:block;letter-spacing:.3px;text-transform:uppercase}
+#tip .cols b{font-size:17px;display:block}
+#tip .cols i{font-size:9px;color:var(--mut);font-style:normal}
+#tip h4{font-size:9px;letter-spacing:.4px;color:#667;margin:8px 0 5px;text-transform:uppercase}
+.dr{display:grid;grid-template-columns:92px 1fr 34px 46px;gap:6px;align-items:center;margin:3px 0;font-size:11px}
+.dr .b{height:5px;background:#ececec;border-radius:3px}.dr .b i{display:block;height:100%;border-radius:3px}
+.dr em{font-style:normal;color:#999;text-align:right;font-size:10px}
+.rod{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid #eee;margin:8px -14px -4px;padding:8px 14px 0;font-size:10px;color:var(--mut)}
+.rod b{display:block;color:#222;font-size:11px;margin-top:2px}
+.sv{margin:7px 0}.sv span{display:block;font-size:11px;margin-bottom:2px}
+.sv div{display:flex;justify-content:space-between;color:#fff;font-size:11px;padding:3px 7px;border-radius:3px}
+#aviso{display:none;background:#fff4e5;border:1px solid #f5b64a;color:#7a4b00;padding:10px 14px;border-radius:8px;margin-bottom:12px}
+footer{font-size:11px;color:#4f6c5e;margin:10px 4px 0;text-align:center}
+.antena{position:absolute;right:18px;bottom:16px;width:70px;opacity:.5;pointer-events:none}
+.pane{display:none}.pane.on{display:block}
+@media(max-width:1100px){.moldura{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr}.tabs{right:10px;top:12px}}
+@media(max-width:600px){.kpis{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
-<header>
-  <h1>Reclamações Anatel — Indicadores de Qualidade de Atendimento</h1>
-  <p>Fonte: Anatel Consumidor via dados.gov.br · <span id="atualizado">carregando…</span></p>
-</header>
-<main>
-  <div id="aviso"></div>
-  <div class="filtros">
-    <label>Métrica<select id="fMet"></select></label>
-    <label>Serviço<select id="fSer" multiple></select></label>
-    <label>Prestadora<select id="fPre" multiple></select></label>
-    <label>UF<select id="fUf" multiple></select></label>
-    <label>De<select id="fDe"></select></label>
-    <label>Até<select id="fAte"></select></label>
+<div class="app">
+  <div class="tabs">
+    <div class="tab on" data-t="geral">Análise Geral</div>
+    <div class="tab" data-t="regional">Análise Regional</div>
+    <div class="tab" data-t="operadora">Análise Operadora</div>
   </div>
-  <div class="kpis">
-    <div class="card kpi"><span>Demandas no período</span><b id="k_demandas">–</b></div>
-    <div class="card kpi"><span>% respondidas</span><b id="k_pct_respondidas">–</b></div>
-    <div class="card kpi"><span>% resolvidas</span><b id="k_pct_resolvidas">–</b></div>
-    <div class="card kpi"><span>% reabertas</span><b id="k_pct_reabertas">–</b></div>
-    <div class="card kpi"><span>Nota média (1–5)</span><b id="k_nota">–</b></div>
-    <div class="card kpi"><span>Prazo médio (dias)</span><b id="k_prazo">–</b></div>
+  <div class="moldura">
+    <aside>
+      <h1>RELATÓRIO DE RECLAMAÇÕES</h1>
+      <div class="marca">TELECOM<small>dados abertos · Anatel Consumidor</small></div>
+      <label for="fAno">Ano</label><select id="fAno"></select>
+      <label for="fMes">Mês</label><select id="fMes"></select>
+      <label for="fSer">Serviço</label><select id="fSer"></select>
+      <label for="fPre">Operadora</label><select id="fPre"></select>
+      <label for="fUf">UF</label><select id="fUf"></select>
+      <div class="dica">Passe o mouse sobre as barras, a linha e as linhas das tabelas para ver os detalhes.</div>
+    </aside>
+    <main>
+      <div id="aviso"></div>
+      <div class="kpis">
+        <div class="card kpi"><div class="t">Total de Reclamações<span>👥</span></div><div class="v" id="k_total">–</div></div>
+        <div class="card kpi"><div class="t">Respondido pela empresa<span>↻</span></div><div class="v" id="k_resp">–</div></div>
+        <div class="card kpi"><div class="t">Não respondido pela empresa<span>✕</span></div><div class="v" id="k_nresp">–</div></div>
+        <div class="card kpi"><div class="t">Sinalizado como resolvido<span>✔</span></div><div class="v" id="k_resol">–</div></div>
+        <div class="card kpi"><div class="t">Sinalizado como não resolvido<span>✘</span></div><div class="v" id="k_nresol">–</div></div>
+        <div class="card kpi"><div class="t">Tempo Médio de Resposta (TMR)<span>⏱</span></div><div class="v" id="k_tmr">–</div></div>
+      </div>
+
+      <div class="pane on" id="p_geral">
+        <div class="g g2">
+          <div class="card"><h2>Número de Reclamações por Operadora</h2><div class="sub">Top 5 empresas de telecomunicações objeto da reclamação</div><div class="cv"><canvas id="cOp"></canvas></div></div>
+          <div class="card"><h2>Índice de Satisfação do Cliente</h2><div class="sub">Nota do consumidor e avaliação ao atendimento prestado</div>
+            <div class="sat" id="sat"></div></div>
+        </div>
+        <div class="g g2">
+          <div class="card"><h2>Assunto da Reclamação</h2><div class="sub">Total de reclamações abertas por assunto <span id="aviAss"></span></div><div class="cv"><canvas id="cAss"></canvas></div></div>
+          <div class="card"><h2>Variação de Reclamações por Mês</h2><div class="sub">Número de reclamações por mês</div><div class="cv"><canvas id="cMes"></canvas></div></div>
+        </div>
+      </div>
+
+      <div class="pane" id="p_regional">
+        <div class="g g2">
+          <div class="card"><h2>Reclamações por UF</h2><div class="sub">Passe o mouse para ver a satisfação de cada estado</div><div class="cv" style="height:520px"><canvas id="cUf"></canvas></div></div>
+          <div class="card"><h2>Indicadores por UF</h2><div class="sub">Ordenado por volume</div><div style="max-height:555px;overflow:auto"><table id="tUf"></table></div></div>
+        </div>
+      </div>
+
+      <div class="pane" id="p_operadora">
+        <div class="card"><h2>Ranking de Operadoras</h2><div class="sub">Top 20 por volume no filtro atual — passe o mouse para ver a distribuição por serviço</div><table id="tOp"></table></div>
+      </div>
+      <footer id="rodape"></footer>
+    </main>
   </div>
-  <div class="grid">
-    <div class="card"><h2>Evolução mensal — <span class="mt"></span></h2><canvas id="cSerie"></canvas></div>
-    <div class="card"><h2>Por prestadora — <span class="mt"></span></h2><canvas id="cPre"></canvas></div>
-  </div>
-  <div class="grid g2">
-    <div class="card"><h2>Por UF — <span class="mt"></span></h2><canvas id="cUf"></canvas></div>
-    <div class="card"><h2>Por assunto — <span class="mt"></span> <small id="nAss"></small></h2><canvas id="cAss"></canvas></div>
-  </div>
-  <footer id="rodape"></footer>
-</main>
+  <svg class="antena" viewBox="0 0 70 120" fill="none" stroke="#2e7d4f" stroke-width="2.5" stroke-linecap="round">
+    <path d="M35 40 L35 118 M35 55 L20 118 M35 55 L50 118 M26 80 H44 M23 100 H47"/><circle cx="35" cy="34" r="5" fill="#2e7d4f"/>
+    <path d="M22 26a18 18 0 0 1 26 0M14 18a30 30 0 0 1 42 0"/></svg>
+</div>
+<div id="tip"></div>
 <script>
 const $ = id => document.getElementById(id);
-const fmt = (v, d = 2) => v == null ? "–" : Number(v).toLocaleString("pt-BR", {maximumFractionDigits: d});
-let pronto = false, charts = {}, nomes = {};
+const MESES = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+const num = (v, d = 0) => v == null ? "–" : Number(v).toLocaleString("pt-BR", {maximumFractionDigits: d, minimumFractionDigits: d});
+const pc = (v, d = 1) => v == null ? "–" : num(v, d) + "%";
+const compacto = v => v >= 1e6 ? num(v / 1e6, 2) + " Mi" : v >= 1e4 ? num(v / 1e3, 1) + " mil" : num(v);
+const kpi = v => v >= 1e6 ? num(v / 1e6, 2) + " Mi" : v >= 1e4 ? num(v / 1e3, 2) + " mil" : num(v);
+const COR = {"Muito satisf.": "#2e7d1f", "Satisfeito": "#8bc34a", "Indiferente": "#8a8a8a", "Insatisfeito": "#f0a08a", "Muito insat.": "#e0382d"};
+const EMO = {1: "😠", 2: "😟", 3: "😐", 4: "🙂", 5: "😍"};
+let D = null, charts = {}, pronto = false;
 
+/* ---------- tooltips ---------- */
+const tip = $("tip");
+function mostrarTip(html, x, y, largo) {
+  tip.className = largo ? "wide" : ""; tip.innerHTML = html; tip.style.display = "block";
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = Math.max(6, Math.min(x + 16, innerWidth - w - 8)) + "px";
+  tip.style.top = Math.max(6, Math.min(y + 12, innerHeight - h - 8)) + "px";
+}
+const esconderTip = () => tip.style.display = "none";
+
+function tipSatisfacao(titulo, s, extra = "") {
+  const cls = s.saldo >= 0 ? "pos" : "neg";
+  return `<h3>${titulo}<span class="tag">${s.nivel}</span></h3>
+    <div class="s">${num(s.avaliacoes)} avaliações no período${extra}</div>
+    <div class="cols"><div><span>Nota média</span><b>${num(s.nota, 1)}</b><i>de 5,0</i></div>
+      <div><span>Satisfeitos</span><b class="pos">${pc(s.satisfeitos, 0)}</b><i>Satisf. + Muito satisf.</i></div>
+      <div><span>Insatisfeitos</span><b class="neg">${pc(s.insatisfeitos, 0)}</b><i>Insat. + Muito insat.</i></div>
+      <div><span>Saldo</span><b class="${cls}">${s.saldo == null ? "–" : (s.saldo > 0 ? "+" : "") + num(s.saldo, 1)}</b><i>pontos percentuais</i></div></div>
+    <h4>Distribuição por categoria</h4>
+    ${s.dist.map(d => `<div class="dr"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${COR[d.label]};margin-right:5px"></i>${d.label}</span>
+      <div class="b"><i style="width:${d.pct}%;background:${COR[d.label]}"></i></div><b>${num(d.pct, 0).padStart(2, "0")}%</b><em>${num(d.n)}</em></div>`).join("")}
+    <div class="rod"><div>NÍVEL DE SATISFAÇÃO<b>${s.nivel}</b></div><div>CATEGORIA PREDOMINANTE<b>${s.predominante}</b></div>
+      <div>POSITIVOS VS NEGATIVOS<b><span class="pos">${pc(s.satisfeitos, 0)}</span> <span class="neg">${pc(s.insatisfeitos, 0)}</span></b></div></div>`;
+}
+function tipServicos(titulo, servicos, total) {
+  return `<h3>📊 ${titulo}</h3><div class="s" style="margin-top:6px">${num(total)} reclamações</div>` +
+    servicos.map((s, i) => `<div class="sv"><span>${s.nome}</span><div style="background:${i === 0 ? "#e8493c" : "#3b82e0"}"><b>${num(s.n)}</b><b>${num(s.pct, 2)}%</b></div></div>`).join("");
+}
+function tipMes(m) {
+  const [a, mm] = m.periodo.split("-");
+  return `<h3>${MESES[+mm - 1]}/${a}</h3><div class="s">${num(m.total)} reclamações</div>
+    <div class="cols" style="grid-template-columns:repeat(3,1fr)"><div><span>% respondidas</span><b>${pc(m.pct_respondidas)}</b></div>
+    <div><span>% resolvidas</span><b>${pc(m.pct_resolvidas)}</b></div><div><span>TMR</span><b>${num(m.tmr, 1)}</b><i>dias</i></div></div>
+    <div class="s" style="margin:6px 0 0">Nota média do consumidor: <b>${num(m.nota, 2)}</b></div>`;
+}
+
+/* ---------- gráficos ---------- */
+const rotulos = {id: "rotulos", afterDatasetsDraw(c) {
+  const {ctx} = c, horiz = c.options.indexAxis === "y"; ctx.save(); ctx.fillStyle = "#555"; ctx.font = "12px Segoe UI";
+  c.getDatasetMeta(0).data.forEach((b, i) => {
+    const t = compacto(c.data.datasets[0].data[i]);
+    if (horiz) { ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText(t, b.x + 6, b.y); }
+    else { ctx.textAlign = "center"; ctx.textBaseline = "bottom"; ctx.fillText(t, b.x, b.y - 4); }
+  }); ctx.restore(); }};
+function externo(fn) {
+  return {enabled: false, external: ctx => {
+    const t = ctx.tooltip;
+    if (!t.opacity || !t.dataPoints) return esconderTip();
+    const r = ctx.chart.canvas.getBoundingClientRect(), i = t.dataPoints[0].dataIndex;
+    mostrarTip(fn(i), r.left + t.caretX, r.top + t.caretY, false);
+  }};
+}
+function grafico(id, cfg) { charts[id]?.destroy(); charts[id] = new Chart($(id), cfg); }
+const corta = (s, n) => s.length > n ? s.slice(0, n - 1) + "…" : s;
+function barras(id, itens, tooltipFn, horiz) {
+  grafico(id, {type: "bar", plugins: [rotulos],
+    data: {labels: itens.map(i => i.nome), datasets: [{data: itens.map(i => i.total), backgroundColor: "#a9cdb7", hoverBackgroundColor: "#6fae8a", borderRadius: 2, barPercentage: .62}]},
+    options: {indexAxis: horiz ? "y" : "x", maintainAspectRatio: false, layout: {padding: {top: 22, right: horiz ? 60 : 4}},
+      plugins: {legend: {display: false}, tooltip: externo(tooltipFn)},
+      scales: {x: {display: !horiz, grid: {display: false}, border: {display: false}, ticks: {color: "#222", font: {size: 12}, maxRotation: 0,
+                    callback: function (v) { const l = this.getLabelForValue(v); return l.length > 12 ? l.split(" ") : l; }}},
+               y: {display: horiz, beginAtZero: true, grid: {display: false}, border: {display: false}, ticks: {color: "#222", font: {size: 12},
+                    callback: function (v) { return horiz ? corta(this.getLabelForValue(v), 30) : ""; }}}}}});
+}
+["cOp", "cAss", "cMes", "cUf"].forEach(id => $(id).addEventListener("mouseleave", esconderTip));
+
+/* ---------- renderização ---------- */
+function painelSatisfacao(s) {
+  const d = Object.fromEntries(s.dist.map(x => [x.nota, x]));
+  $("sat").innerHTML = `<div class="tt">⭐ Satisfação dos Clientes<small>Total de avaliações: ${num(s.avaliacoes)}</small></div>
+    <div class="mini"><div><span>⭐ Nota Média</span><b>${num(s.nota, 2)}</b><i>de 5</i></div>
+      <div><span>🙂 Satisfeitos</span><b class="pos">${pc(s.satisfeitos)}</b></div>
+      <div><span>😟 Insatisfeitos</span><b class="neg">${pc(s.insatisfeitos)}</b></div>
+      <div><span>Saldo</span><b class="azul">${s.saldo == null ? "–" : num(s.saldo, 1) + " p.p."}</b></div></div>
+    <div class="emo">${[1, 2, 3, 4, 5].map(k => `<div><div class="e">${EMO[k]}</div><div class="l">${d[k].label}</div><b>${num(d[k].n)}</b><small>${pc(d[k].pct)}</small></div>`).join("")}</div>`;
+}
+
+function render() {
+  const k = D.kpis;
+  $("k_total").textContent = kpi(k.total); $("k_resp").textContent = kpi(k.respondidas);
+  $("k_nresp").textContent = num(k.nao_respondidas); $("k_resol").textContent = kpi(k.resolvidas);
+  $("k_nresol").textContent = kpi(k.nao_resolvidas); $("k_tmr").textContent = num(k.tmr, 0);
+  painelSatisfacao(D.sat);
+
+  const ops = D.operadoras.slice(0, 5);
+  barras("cOp", ops, i => tipSatisfacao("Satisfação dos clientes", ops[i].sat, ` · ${ops[i].nome}`), false);
+  $("aviAss").textContent = D.assunto_filtra_uf ? "(o filtro de UF não se aplica a este gráfico)" : "";
+  const ass = D.assuntos.slice(0, 5);
+  barras("cAss", ass, i => tipServicos("Reclamações por Serviços", ass[i].servicos, ass[i].total), true);
+
+  const porAno = !!$("fAno").value;
+  grafico("cMes", {type: "line",
+    data: {labels: D.serie.map(m => porAno ? MESES[+m.periodo.slice(5) - 1] : m.periodo),
+           datasets: [{data: D.serie.map(m => m.total), borderColor: "#1f7bff", borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, tension: .25}]},
+    options: {maintainAspectRatio: false, interaction: {mode: "index", intersect: false},
+      plugins: {legend: {display: false}, tooltip: externo(i => tipMes(D.serie[i]))},
+      scales: {x: {grid: {display: false}, ticks: {color: "#444", maxTicksLimit: 14}}, y: {display: false, beginAtZero: true}}}});
+
+  barras("cUf", D.regional, i => tipSatisfacao("Satisfação dos clientes", D.regional[i].sat, ` · ${D.regional[i].nome}`), true);
+  $("tUf").innerHTML = `<thead><tr><th>UF</th><th>Reclamações</th><th>% respondidas</th><th>% resolvidas</th><th>TMR</th><th>Nota</th></tr></thead><tbody>` +
+    D.regional.map((r, i) => `<tr data-i="${i}"><td>${r.nome}</td><td>${num(r.total)}</td><td>${pc(r.pct_respondidas)}</td><td>${pc(r.pct_resolvidas)}</td><td>${num(r.tmr, 1)}</td><td>${num(r.sat.nota, 2)}</td></tr>`).join("") + "</tbody>";
+  $("tOp").innerHTML = `<thead><tr><th>Operadora</th><th>Reclamações</th><th>% respondidas</th><th>% resolvidas</th><th>TMR (dias)</th><th>Nota média</th><th>Satisfeitos</th><th>Insatisfeitos</th></tr></thead><tbody>` +
+    D.operadoras.map((r, i) => `<tr data-i="${i}"><td>${r.nome}</td><td>${num(r.total)}</td><td>${pc(r.pct_respondidas)}</td><td>${pc(r.pct_resolvidas)}</td><td>${num(r.tmr, 1)}</td><td>${num(r.sat.nota, 2)}</td><td class="pos">${pc(r.sat.satisfeitos, 0)}</td><td class="neg">${pc(r.sat.insatisfeitos, 0)}</td></tr>`).join("") + "</tbody>";
+
+  const m = D.meta;
+  $("rodape").textContent = `${num(m.registros_origem)} registros de origem · ${m.periodo[0]} a ${m.periodo[1]} · atualizado em ${new Date(m.atualizado_em).toLocaleString("pt-BR")} · atualização automática a cada 2 dias · Licença: Creative Commons Attribution (Anatel)`;
+}
+
+function ligarTabelas() {
+  const linha = (tabela, fn) => {
+    tabela.addEventListener("mousemove", e => { const tr = e.target.closest("tbody tr"); if (!tr) return esconderTip(); mostrarTip(fn(+tr.dataset.i), e.clientX, e.clientY); });
+    tabela.addEventListener("mouseleave", esconderTip);
+  };
+  linha($("tUf"), i => tipSatisfacao("Satisfação dos clientes", D.regional[i].sat, ` · ${D.regional[i].nome}`));
+  linha($("tOp"), i => tipServicos(`Reclamações por Serviços · ${D.operadoras[i].nome}`, D.operadoras[i].servicos, D.operadoras[i].total));
+}
+
+/* ---------- dados e filtros ---------- */
 function params() {
   const q = new URLSearchParams();
-  const multi = (el, k) => [...el.selectedOptions].forEach(o => q.append(k, o.value));
-  multi($("fSer"), "servico"); multi($("fPre"), "prestadora"); multi($("fUf"), "uf");
-  if ($("fDe").value) q.set("de", $("fDe").value);
-  if ($("fAte").value) q.set("ate", $("fAte").value);
-  if ($("fMet").value) q.set("metrica", $("fMet").value);
+  [["fAno", "ano"], ["fMes", "mes"], ["fSer", "servico"], ["fPre", "prestadora"], ["fUf", "uf"]].forEach(([id, k]) => { if ($(id).value) q.set(k, $(id).value); });
   return q;
 }
-const opts = (el, itens, vazio) => el.innerHTML = (vazio ? `<option value="">${vazio}</option>` : "") +
-  itens.map(i => Array.isArray(i) ? `<option value="${i[0]}">${i[1]}</option>` : `<option>${i}</option>`).join("");
-
-function desenhar(id, cfg) { charts[id]?.destroy(); charts[id] = new Chart($(id), cfg); }
-const barra = (id, itens, horiz = true) => desenhar(id, {type: "bar",
-  data: {labels: itens.map(i => i.nome), datasets: [{data: itens.map(i => i.valor), backgroundColor: "#1f5eff"}]},
-  options: {indexAxis: horiz ? "y" : "x", plugins: {legend: {display: false},
-    tooltip: {callbacks: {afterLabel: c => fmt(itens[c.dataIndex].demandas, 0) + " demandas"}}}}});
+const opcoes = (el, itens, todos) => el.innerHTML = `<option value="">${todos}</option>` + itens.map(i => Array.isArray(i) ? `<option value="${i[0]}">${i[1]}</option>` : `<option>${i}</option>`).join("");
 
 async function carregar() {
-  const r = await fetch("/api/dados?" + params());
-  const d = await r.json();
-  const av = $("aviso");
-  if (d.erro) { av.style.display = "block"; av.textContent = "Erro: " + d.erro; return; }
+  const r = await fetch("/api/dados?" + params()); D = await r.json();
+  if (D.erro) { $("aviso").style.display = "block"; $("aviso").textContent = "Erro: " + D.erro; return; }
+  $("aviso").style.display = "none";
   if (!pronto) {
-    pronto = true; nomes = d.metricas;
-    opts($("fMet"), Object.entries(d.metricas));
-    opts($("fSer"), d.opcoes.servicos); opts($("fPre"), d.opcoes.prestadoras); opts($("fUf"), d.opcoes.ufs);
-    opts($("fDe"), d.opcoes.periodos, "Início"); opts($("fAte"), d.opcoes.periodos, "Fim");
+    pronto = true;
+    opcoes($("fAno"), D.opcoes.anos, "Todos"); opcoes($("fMes"), MESES.map((m, i) => [String(i + 1).padStart(2, "0"), m]), "Todos");
+    opcoes($("fSer"), D.opcoes.servicos, "Todos"); opcoes($("fPre"), D.opcoes.prestadoras, "Todas"); opcoes($("fUf"), D.opcoes.ufs, "Todas");
+    ligarTabelas();
+    $("fAno").value = D.opcoes.anos[0];                 // começa no ano mais recente
+    return carregar();
   }
-  document.querySelectorAll(".mt").forEach(e => e.textContent = nomes[d.metrica]);
-  $("atualizado").textContent = "dados de " + d.meta.periodo[0] + " a " + d.meta.periodo[1] +
-    " · atualizado em " + new Date(d.meta.atualizado_em).toLocaleString("pt-BR");
-  $("rodape").textContent = fmt(d.meta.registros_origem, 0) + " registros de origem processados. Atualização automática a cada 2 dias. Licença: Creative Commons Attribution (Anatel).";
-  $("k_demandas").textContent = fmt(d.kpis.demandas, 0);
-  ["pct_respondidas", "pct_resolvidas", "pct_reabertas"].forEach(k => $("k_" + k).textContent = fmt(d.kpis[k]) + "%");
-  $("k_nota").textContent = fmt(d.kpis.nota); $("k_prazo").textContent = fmt(d.kpis.prazo, 1);
-  $("nAss").textContent = d.assunto_disponivel ? "" : "(indisponível com filtro de UF)";
-
-  desenhar("cSerie", {type: "line", data: {labels: d.serie.map(s => s.periodo),
-    datasets: [{data: d.serie.map(s => s.valor), borderColor: "#1f5eff", backgroundColor: "#1f5eff22",
-                fill: true, tension: .25, pointRadius: 0}]}, options: {plugins: {legend: {display: false}}}});
-  barra("cPre", d.ranking_prestadora); barra("cUf", d.ranking_uf, false); barra("cAss", d.ranking_assunto);
+  render();
 }
-["fMet", "fSer", "fPre", "fUf", "fDe", "fAte"].forEach(id => $(id).addEventListener("change", carregar));
+["fAno", "fMes", "fSer", "fPre", "fUf"].forEach(id => $(id).addEventListener("change", carregar));
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === t));
+  document.querySelectorAll(".pane").forEach(p => p.classList.toggle("on", p.id === "p_" + t.dataset.t));
+  esconderTip(); Object.values(charts).forEach(c => c.resize());
+}));
 carregar().catch(e => { $("aviso").style.display = "block"; $("aviso").textContent = "Falha ao carregar: " + e; });
 </script>
 </body>
