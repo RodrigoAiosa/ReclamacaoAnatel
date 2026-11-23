@@ -28,6 +28,14 @@ def _tabela(nome):
     return _cache[nome]
 
 
+def _meses_por_ano(A):
+    """Meses que existem nos dados, por ano: {"2026": ["01", ..., "11"]} (filtro Mês só lista o que há)."""
+    m = {}
+    for r in A:
+        m.setdefault(r[0][:4], set()).add(r[0][5:7])
+    return {a: sorted(v) for a, v in m.items()}
+
+
 def _dias():
     """Agregado diário (opcional): [dia, servico, prestadora, dem, resp, resol, aval]."""
     if "dia" not in _cache:
@@ -200,7 +208,7 @@ def montar(q):
         meta["verificado_em"] = meta.get("atualizado_em")
     return {
         "meta": meta,
-        "opcoes": {"anos": sorted({r[0][:4] for r in A}, reverse=True), "servicos": sorted({r[1] for r in A}),
+        "opcoes": {"anos": sorted({r[0][:4] for r in A}, reverse=True), "meses": _meses_por_ano(A), "servicos": sorted({r[1] for r in A}),
                    "prestadoras": sorted({r[2] for r in A}), "principais": _principais(A), "ufs": sorted({r[3] for r in A})},
         "kpis": resumo(tot), "sat": sat(tot), "serie": meses,
         "dias": dias, "ultima_data": _ultima_data(), "operadoras": top_op, "assuntos": assuntos, "regional": regional,

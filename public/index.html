@@ -676,16 +676,24 @@ function params() {
 }
 const opcoes = (el, itens, todos) => el.innerHTML = `<option value="">${todos}</option>` + itens.map(i => Array.isArray(i) ? `<option value="${i[0]}">${i[1]}</option>` : `<option>${i}</option>`).join("");
 
+/* Filtro Mês: só os meses que existem nos dados do ano escolhido (ou de qualquer ano, se "Todos") */
+function opcoesMes() {
+  const ano = $("fAno").value, por = D.opcoes.meses || {}, atual = $("fMes").value;
+  const ms = ano ? (por[ano] || []) : [...new Set(Object.values(por).flat())].sort();
+  opcoes($("fMes"), ms.map(m => [m, MESES[+m - 1]]), "Todos");
+  $("fMes").value = ms.includes(atual) ? atual : "";
+}
 async function carregar() {
   const r = await fetch("/api/dados?" + params()); D = await r.json();
   if (D.erro) { $("aviso").style.display = "block"; $("aviso").textContent = "Erro: " + D.erro; return; }
   $("aviso").style.display = "none";
   if (!pronto) {
     pronto = true;
-    opcoes($("fAno"), D.opcoes.anos, "Todos"); opcoes($("fMes"), MESES.map((m, i) => [String(i + 1).padStart(2, "0"), m]), "Todos");
+    opcoes($("fAno"), D.opcoes.anos, "Todos"); opcoesMes();
     opcoes($("fSer"), D.opcoes.servicos, "Todos"); opcoes($("fPre"), D.opcoes.prestadoras, "Todas"); opcoes($("fUf"), D.opcoes.ufs, "Todas");
     ligarTabelas(); montarOps();
     $("fAno").value = D.opcoes.anos[0];                 // começa no ano mais recente
+    opcoesMes();
     return carregar();
   }
   render(); marcarOps();
@@ -698,7 +706,8 @@ function rota() {
   if (painel) requestAnimationFrame(() => Object.values(charts).forEach(c => c.resize()));
 }
 addEventListener("hashchange", rota); rota();
-["fAno", "fMes", "fSer", "fPre", "fUf"].forEach(id => $(id).addEventListener("change", carregar));
+["fMes", "fSer", "fPre", "fUf"].forEach(id => $(id).addEventListener("change", carregar));
+$("fAno").addEventListener("change", () => { opcoesMes(); carregar(); });   // troca o ano: refaz a lista de meses antes de consultar
 document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
   document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === t));
   document.querySelectorAll(".pane").forEach(p => p.classList.toggle("on", p.id === "p_" + t.dataset.t));
