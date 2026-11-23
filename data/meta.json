@@ -1,0 +1,23 @@
+{
+  "atualizado_em": "2026-11-23T01:19:07+00:00",
+  "origem": "https://www.anatel.gov.br/dadosabertos/paineis_de_dados/consumidor/indicadores_qualidade_atendimento.zip",
+  "sha256": "86eede8fd6686771a0e5337985328776ec41c3c769926af3faa520a391bbccd3",
+  "registros_origem": 12192383,
+  "periodo": [
+    "2019-11",
+    "2026-11"
+  ],
+  "linhas_agregadas": 176130,
+  "medidas": [
+    "dem",
+    "rec",
+    "resp",
+    "resol",
+    "aval",
+    "reab",
+    "nota_n",
+    "nota_sum",
+    "prazo_n",
+    "prazo_sum"
+  ]
+}
