@@ -131,7 +131,7 @@ footer{font-size:11px;color:#4f6c5e;margin:10px 4px 0;text-align:center}
 #tip.tbl .kv{border:0}
 .heat{overflow-x:auto;padding:3px}
 .hg{display:grid;gap:2px;min-width:780px;font-size:11px}
-.hg .h{font-size:10px;color:var(--mut);text-align:center;padding:2px 3px 6px;line-height:1.15;display:flex;align-items:flex-end;justify-content:center}
+.hg .h{hyphens:none;padding-inline:4px;font-size:10px;color:var(--mut);text-align:center;padding:2px 3px 6px;line-height:1.15;display:flex;align-items:flex-end;justify-content:center}
 .hg .o{display:flex;align-items:center;font-weight:600;color:var(--ink);padding-right:6px;font-size:12px}
 .hg .c{height:38px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px;cursor:default;transition:box-shadow .1s}
 .hg .c:hover{box-shadow:inset 0 0 0 2px #111}
@@ -494,7 +494,7 @@ function renderServicos() {
   const mxA = Math.max(1, ...A.servicos.flatMap((_, j) => cols.map((_, i) => pct(j, i))));
   const colTot = i => i < nA ? A.totais[i] : A.totais_servico.reduce((a, b) => a + b, 0) - A.totais.reduce((a, b) => a + b, 0);
   $("heatAs").style.gridTemplateColumns = `140px repeat(${cols.length}, 1fr) 70px`;
-  $("heatAs").innerHTML = `<div></div>` + cols.map(c => `<div class="h" title="${c}">${curto(c, 20)}</div>`).join("") + `<div class="h">Total</div>` +
+  $("heatAs").innerHTML = `<div></div>` + cols.map(c => `<div class="h" title="${c}">${c}</div>`).join("") + `<div class="h">Total</div>` +
     A.servicos.map((n, j) => `<div class="o"><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${corSv(n)};margin-right:6px"></i>${n}</div>` +
       cols.map((_, i) => { const v = pct(j, i), t = v / mxA;
         return `<div class="c" data-j="${j}" data-i="${i}" style="background:${vol[j][i] ? mix("#f1f6f3", "#1f6b46", Math.min(1, t)) : "#f6f7f6"};color:${vol[j][i] ? (t > .5 ? "#fff" : "#1d2b24") : "#9aa6a0"}">${vol[j][i] ? num(v, v < 1 ? 1 : 0) + "%" : "0%"}</div>`; }).join("") +
@@ -520,7 +520,7 @@ function renderServicos() {
 
   const M = S.mapa, mx = Math.max(1, ...M.celulas.map(c => c.pct_op || 0));
   $("heat").style.gridTemplateColumns = `130px repeat(${M.assuntos.length}, 1fr)`;
-  $("heat").innerHTML = `<div></div>` + M.assuntos.map(a => `<div class="h" title="${a}">${curto(a, 20)}</div>`).join("") +
+  $("heat").innerHTML = `<div></div>` + M.assuntos.map(a => `<div class="h" title="${a}">${a}</div>`).join("") +
     M.operadoras.map((o, oi) => `<div class="o">${o}</div>` + M.assuntos.map((a, ai) => {
       const c = M.celulas[oi * M.assuntos.length + ai], t = (c.pct_op || 0) / mx;
       return `<div class="c" data-i="${oi * M.assuntos.length + ai}" style="background:${mix("#f1f6f3", "#1f6b46", t)};color:${t > .5 ? "#fff" : "#1d2b24"}">${c.total ? num(c.pct_op, 0) + "%" : "–"}</div>`; }).join("")).join("");
