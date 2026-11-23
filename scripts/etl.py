@@ -21,10 +21,10 @@ log = lambda *a: print(f"[{time.time() - T0:5.0f}s]", *a, flush=True)
 BASE_SQL = """
 CREATE TABLE base AS
 SELECT substr(DATA_ABERTURA, 1, 7)                       AS mes,
-       trim(SERVICO)                                      AS servico,
-       upper(trim(PRESTADORA))                            AS prestadora,
-       trim(UF)                                           AS uf,
-       trim(ASSUNTO)                                      AS assunto,
+       coalesce(nullif(trim(SERVICO), ''), 'N/I')         AS servico,
+       coalesce(nullif(upper(trim(PRESTADORA)), ''), 'N/I') AS prestadora,
+       coalesce(nullif(trim(UF), ''), 'N/I')              AS uf,
+       coalesce(nullif(trim(ASSUNTO), ''), 'N/I')         AS assunto,
        TIPO_ATENDIMENTO = 'Reclamação'                    AS rec,
        RESPONDIDA = 'S'                                   AS resp,
        RESOLVIDA = 'S'                                    AS resol,

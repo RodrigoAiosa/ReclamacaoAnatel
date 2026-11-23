@@ -24,7 +24,11 @@ _cache = {}
 def _tabela(nome):
     if nome not in _cache:
         with gzip.open(DATA / f"{nome}.json.gz", "rt", encoding="utf-8") as f:
-            _cache[nome] = json.load(f)["rows"]
+            rows = json.load(f)["rows"]
+        for r in rows:                      # campos vazios na origem -> "N/I"
+            for i in range(4):
+                r[i] = r[i] or "N/I"
+        _cache[nome] = rows
     return _cache[nome]
 
 
@@ -88,6 +92,7 @@ class handler(BaseHTTPRequestHandler):
             body, status = json.dumps({"erro": f"{type(exc).__name__}: {exc}"}).encode(), 500
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400")
+        self.send_header("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400"
+                         if status == 200 else "no-store")
         self.end_headers()
         self.wfile.write(body)
