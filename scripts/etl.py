@@ -6,7 +6,7 @@
 Se o ZIP não mudou desde a última execução (sha256), sai sem reprocessar.
 """
 from __future__ import annotations
-import argparse, gzip, hashlib, json, os, shutil, subprocess, sys, tempfile, time, urllib.request, zipfile
+import argparse, csv, gzip, hashlib, json, os, shutil, subprocess, sys, tempfile, time, urllib.request, zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -14,9 +14,14 @@ import duckdb
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
+LOG_CSV = ROOT / "logs" / "atualizacoes.csv"
+COLUNAS_LOG = [
+    "data_hora_execucao_utc", "data_hora_atualizacao_utc", "status", "gatilho", "run_id", "run_numero", "run_url", "commit_sha",
+    "origem_url", "sha256_zip", "tamanho_zip_mb", "registros_origem", "linhas_agregadas", "periodo_inicio", "periodo_fim",
+    "ultima_data_abertura", "duracao_segundos", "versao_etl", "mensagem"]
 MEDIDAS = ["dem", "rec", "resp", "resol", "aval", "reab", "nota_n", "nota_sum", "prazo_n", "prazo_sum",
            "n1", "n2", "n3", "n4", "n5"]
-VERSAO = 2   # aumente quando o formato dos agregados mudar (força reprocessar)
+VERSAO = 3   # aumente quando o formato dos agregados mudar (força reprocessar)
 T0 = time.time()
 log = lambda *a: print(f"[{time.time() - T0:5.0f}s]", *a, flush=True)
 
@@ -97,17 +102,58 @@ def marcar_verificacao(mudou: bool):
         "verificado_em": datetime.now(timezone.utc).isoformat(timespec="seconds"), "dados_novos": mudou}), encoding="utf-8")
 
 
+def registrar_log(st: dict):
+    """Acrescenta uma linha em logs/atualizacoes.csv (cria o arquivo com cabeçalho se não existir)."""
+    env = os.environ.get
+    run_id, repo, srv = env("GITHUB_RUN_ID", ""), env("GITHUB_REPOSITORY", ""), env("GITHUB_SERVER_URL", "https://github.com")
+    linha = {
+        "data_hora_execucao_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "gatilho": env("GITHUB_EVENT_NAME", "manual"), "run_id": run_id, "run_numero": env("GITHUB_RUN_NUMBER", ""),
+        "run_url": f"{srv}/{repo}/actions/runs/{run_id}" if run_id else "", "commit_sha": env("GITHUB_SHA", "")[:7],
+        "duracao_segundos": round(time.time() - T0), "versao_etl": VERSAO, **st}
+    LOG_CSV.parent.mkdir(exist_ok=True)
+    novo = not LOG_CSV.exists() or LOG_CSV.stat().st_size == 0
+    with open(LOG_CSV, "a", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=COLUNAS_LOG, extrasaction="ignore")
+        if novo:
+            w.writeheader()
+        w.writerow({c: linha.get(c, "") for c in COLUNAS_LOG})
+    log(f"log registrado: {LOG_CSV.relative_to(ROOT)} (status={linha.get('status')})")
+
+
 def main():
+    st = {"status": "erro"}
+    try:
+        executar(st)
+    except SystemExit as e:                     # sys.exit("mensagem") = falha esperada
+        if e.code not in (None, 0):
+            st.update(status="erro", mensagem=str(e.code)[:300]); registrar_log(st)
+        raise
+    except Exception as e:                      # noqa: BLE001
+        st.update(status="erro", mensagem=f"{type(e).__name__}: {e}"[:300]); registrar_log(st)
+        raise
+    else:
+        registrar_log(st)
+
+
+def executar(st: dict):
     ap = argparse.ArgumentParser(); ap.add_argument("--file"); ap.add_argument("--force", action="store_true")
     args = ap.parse_args()
     DATA.mkdir(exist_ok=True)
     zp = obter_zip(args)
     digest = hashlib.sha256(zp.read_bytes()).hexdigest() if zp.stat().st_size < (1 << 31) else "grande"
+    st.update(origem_url=os.environ.get("DATA_URL") or str(args.file), sha256_zip=digest, tamanho_zip_mb=round(zp.stat().st_size / 2**20, 1))
     meta_p = DATA / "meta.json"
-    if not args.force and meta_p.exists() and json.loads(meta_p.read_text()).get("sha256") == digest \
-            and json.loads(meta_p.read_text()).get("versao") == VERSAO:
+    ant = json.loads(meta_p.read_text()) if meta_p.exists() else {}
+    if not args.force and ant.get("sha256") == digest and ant.get("versao") == VERSAO:
         log("arquivo inalterado desde a última execução; nada a reprocessar.")
+        st.update(status="sem_novidades", mensagem="Arquivo da Anatel inalterado (mesmo sha256); nada a reprocessar.",
+                  registros_origem=ant.get("registros_origem", ""), linhas_agregadas=ant.get("linhas_agregadas", ""),
+                  periodo_inicio=(ant.get("periodo") or ["", ""])[0], periodo_fim=(ant.get("periodo") or ["", ""])[1],
+                  ultima_data_abertura=ant.get("ultima_data_abertura", ""))
         marcar_verificacao(False); return
+    motivo = ("Arquivo novo na fonte (sha256 diferente)." if ant.get("sha256") != digest else
+              f"Reprocessado: versão do ETL mudou ({ant.get('versao')} → {VERSAO})." if ant.get("versao") != VERSAO else "Reprocessamento forçado (--force).")
 
     csv = extrair_csv(zp)
     con = duckdb.connect()
@@ -131,12 +177,16 @@ def main():
                          "WHERE regexp_matches(dia, '^[0-9]{4}-[0-9]{2}-[0-9]{2}$') GROUP BY dia ORDER BY dia DESC LIMIT 5").fetchall():
         log(f"  dia {r[0]}: total={r[1]} respondidas={r[2]} resolvidas(S)={r[3]} avaliadas={r[4]}")
     mn, mx = con.execute("SELECT min(mes), max(mes) FROM base").fetchone()
+    ultima = con.execute("SELECT max(dia) FROM base WHERE regexp_matches(dia, '^[0-9]{4}-[0-9]{2}-[0-9]{2}$')").fetchone()[0] or ""
+    agora = datetime.now(timezone.utc).isoformat(timespec="seconds")
     meta_p.write_text(json.dumps({
-        "atualizado_em": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "atualizado_em": agora, "ultima_data_abertura": ultima,
         "origem": os.environ.get("DATA_URL", str(args.file)), "sha256": digest,
         "registros_origem": n, "periodo": [mn, mx], "linhas_agregadas": n1 + n2 + n3, "versao": VERSAO, "medidas": MEDIDAS,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     marcar_verificacao(True)
+    st.update(status="atualizado", data_hora_atualizacao_utc=agora, registros_origem=n, linhas_agregadas=n1 + n2 + n3,
+              periodo_inicio=mn, periodo_fim=mx, ultima_data_abertura=ultima, mensagem=motivo)
     log(f"concluído ({mn} → {mx})")
 
 
