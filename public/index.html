@@ -12,9 +12,12 @@ body{margin:0;font:14px/1.4 "Segoe UI",system-ui,sans-serif;color:var(--ink);
   background:linear-gradient(180deg,#a9cbb6 0%,#cfe3d6 60%,#dcebe1 100%);min-height:100vh}
 .app{max-width:1500px;margin:0 auto;padding:46px 22px 24px;position:relative}
 .moldura{border:3px solid var(--verde);border-radius:26px;background:#e4efe8;padding:14px;display:grid;grid-template-columns:250px 1fr;gap:14px;position:relative}
-.tabs{position:absolute;top:12px;right:60px;display:flex;gap:4px}
-.tab{padding:7px 22px;border-radius:14px 14px 0 0;background:#c3dccb;color:#8aa89a;border:3px solid var(--verde);border-bottom:0;cursor:pointer;font-weight:600;font-size:13px}
-.tab.on{background:#e4efe8;color:var(--verde2)}
+.tabs{position:absolute;top:8px;right:46px;display:flex;gap:0;z-index:3;align-items:flex-end}
+.tab{position:relative;display:flex;align-items:center;gap:7px;height:38px;padding:0 34px 3px;margin-left:-14px;cursor:pointer;font-weight:600;font-size:13px;white-space:nowrap;color:#8fb09f;
+  background:rgba(255,255,255,.38);clip-path:polygon(0 100%,5% 55%,9% 12%,14% 2%,86% 2%,91% 12%,95% 55%,100% 100%);transition:background .15s,color .15s;margin-bottom:3px;height:35px;padding-bottom:0}
+.tab svg{width:15px;height:15px;flex:0 0 auto;fill:currentColor}
+.tab:hover{background:rgba(255,255,255,.6)}
+.tab.on{background:#e4efe8;color:var(--verde2);height:38px;margin-bottom:0;padding-bottom:3px;z-index:2;text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1.5px}
 aside{background:var(--verde);border-radius:18px;padding:18px 14px;color:#fff;display:flex;flex-direction:column;gap:6px}
 aside h1{font-size:14px;letter-spacing:.3px;margin:2px 0 10px;font-weight:600}
 .marca{background:#fff;border-radius:6px;padding:14px 10px;color:var(--verde);font-weight:800;font-size:19px;text-align:center;letter-spacing:.5px;margin-bottom:12px}
@@ -83,7 +86,7 @@ tbody tr:hover{background:#e9f3ed}
 footer{font-size:11px;color:#4f6c5e;margin:10px 4px 0;text-align:center}
 .antena{position:absolute;right:18px;bottom:16px;width:70px;opacity:.5;pointer-events:none}
 .pane{display:none}.pane.on{display:block}
-@media(max-width:1100px){.moldura{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr}.tabs{right:10px;top:12px}}
+@media(max-width:1100px){.moldura{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr}.tabs{right:10px;top:8px}.tab{padding:0 16px 3px}}
 @media(max-width:600px){.kpis{grid-template-columns:repeat(2,1fr)}}
 .capa{max-width:1500px;margin:0 auto;padding:22px 22px 0;container-type:inline-size;position:relative}
 .capa .wrap{position:relative}
@@ -119,9 +122,9 @@ footer{font-size:11px;color:#4f6c5e;margin:10px 4px 0;text-align:center}
 </section>
 <div class="app" id="painel">
   <div class="tabs">
-    <div class="tab on" data-t="geral">Análise Geral</div>
-    <div class="tab" data-t="regional">Análise Regional</div>
-    <div class="tab" data-t="operadora">Análise Operadora</div>
+    <div class="tab on" data-t="geral"><svg viewBox="0 0 24 24"><path d="M4 20V10h4v10zm6 0V4h4v16zm6 0v-7h4v7z"/></svg>Análise Geral</div>
+    <div class="tab" data-t="regional"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>Análise Regional</div>
+    <div class="tab" data-t="operadora"><svg viewBox="0 0 24 24"><path d="M12 11a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-1 5h2l3 6h-2l-.7-1.4h-2.6L10 22H8zM7.8 5.8l1.4 1.4a4 4 0 0 0 0 5.6l-1.4 1.4a6 6 0 0 1 0-8.4zm8.4 0a6 6 0 0 1 0 8.4l-1.4-1.4a4 4 0 0 0 0-5.6z"/></svg>Análise Operadora</div>
   </div>
   <div class="moldura">
     <aside>
