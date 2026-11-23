@@ -1,0 +1,18 @@
+name: Inspecionar arquivo da Anatel (rápido)
+on:
+  workflow_dispatch:
+  push:
+    paths: [".github/workflows/inspecionar.yml"]
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: |
+          URL="https://www.anatel.gov.br/dadosabertos/paineis_de_dados/consumidor/indicadores_qualidade_atendimento.zip"
+          curl -sSL -A "Mozilla/5.0" -o a.zip "$URL"
+          ls -l a.zip
+          unzip -l a.zip
+          for f in $(unzip -Z1 a.zip | head -5); do
+            echo "=== $f"; unzip -p a.zip "$f" | head -6 | cut -c1-600
+          done
