@@ -28,6 +28,17 @@ def _tabela(nome):
     return _cache[nome]
 
 
+def _dias():
+    """Agregado diário (opcional): [dia, servico, prestadora, dem, resp, resol, aval]."""
+    if "dia" not in _cache:
+        try:
+            with gzip.open(DATA / "por_dia.json.gz", "rt", encoding="utf-8") as f:
+                _cache["dia"] = json.load(f)["rows"]
+        except FileNotFoundError:
+            _cache["dia"] = []
+    return _cache["dia"]
+
+
 def _div(a, b, k=1.0, d=2):
     return round(k * a / b, d) if b else None
 
@@ -104,13 +115,26 @@ def montar(q):
     regional = [{"nome": k, "total": int(v[0]), "sat": sat(v), **resumo(v)}
                 for k, v in sorted(por_uf.items(), key=lambda x: -x[1][0]) if v[0]]
     meses = [{"periodo": k, "nota": _div(v[7], v[6]), **resumo(v)} for k, v in sorted(serie.items())]
+    # últimos dias de cada mês (tooltip da linha mensal) — respeita serviço/operadora; UF não existe no diário
+    dia_acc = defaultdict(lambda: [0, 0, 0, 0])
+    for r in _dias():
+        if base(r) and no_ano(r):
+            a = dia_acc[r[0]]
+            for i in range(4):
+                a[i] += r[3 + i]
+    dias = defaultdict(list)
+    for d in sorted(dia_acc, reverse=True):
+        lst = dias[d[:7]]
+        if len(lst) < 7:
+            v = dia_acc[d]
+            lst.append({"dia": d, "total": v[0], "respondida": v[1], "resolvida": v[2], "pct": _div(v[2], v[0], 100, 2)})
     meta = json.loads((DATA / "meta.json").read_text(encoding="utf-8"))
     return {
         "meta": meta,
         "opcoes": {"anos": sorted({r[0][:4] for r in A}, reverse=True), "servicos": sorted({r[1] for r in A}),
                    "prestadoras": sorted({r[2] for r in A}), "ufs": sorted({r[3] for r in A})},
         "kpis": resumo(tot), "sat": sat(tot), "serie": meses,
-        "operadoras": top_op, "assuntos": assuntos, "regional": regional,
+        "dias": dias, "operadoras": top_op, "assuntos": assuntos, "regional": regional,
         "assunto_filtra_uf": bool(uf),
     }
 

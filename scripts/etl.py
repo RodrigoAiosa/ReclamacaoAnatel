@@ -16,12 +16,14 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
 MEDIDAS = ["dem", "rec", "resp", "resol", "aval", "reab", "nota_n", "nota_sum", "prazo_n", "prazo_sum",
            "n1", "n2", "n3", "n4", "n5"]
+VERSAO = 2   # aumente quando o formato dos agregados mudar (força reprocessar)
 T0 = time.time()
 log = lambda *a: print(f"[{time.time() - T0:5.0f}s]", *a, flush=True)
 
 BASE_SQL = """
 CREATE TABLE base AS
 SELECT substr(DATA_ABERTURA, 1, 7)                       AS mes,
+       substr(DATA_ABERTURA, 1, 10)                      AS dia,
        coalesce(nullif(trim(SERVICO), ''), 'N/I')         AS servico,
        coalesce(nullif(upper(trim(PRESTADORA)), ''), 'N/I') AS prestadora,
        coalesce(nullif(trim(UF), ''), 'N/I')              AS uf,
@@ -36,6 +38,10 @@ SELECT substr(DATA_ABERTURA, 1, 7)                       AS mes,
 FROM read_csv('{csv}', delim=';', header=true, all_varchar=true, encoding='{enc}',
               ignore_errors=true, parallel=true)
 WHERE regexp_matches(DATA_ABERTURA, '^[0-9]{{4}}-[0-9]{{2}}')
+"""
+AGG_DIA = """
+SELECT dia, servico, prestadora, count(*) dem, sum(resp::INT) resp, sum(resol::INT) resol, sum(aval::INT) aval
+FROM base WHERE regexp_matches(dia, '^[0-9]{4}-[0-9]{2}-[0-9]{2}$') GROUP BY ALL ORDER BY ALL
 """
 AGG = """
 SELECT {dims}, count(*) dem, sum(rec::INT) rec, sum(resp::INT) resp, sum(resol::INT) resol,
@@ -93,7 +99,7 @@ def main():
     digest = hashlib.sha256(zp.read_bytes()).hexdigest() if zp.stat().st_size < (1 << 31) else "grande"
     meta_p = DATA / "meta.json"
     if not args.force and meta_p.exists() and json.loads(meta_p.read_text()).get("sha256") == digest \
-            and json.loads(meta_p.read_text()).get("medidas") == MEDIDAS:
+            and json.loads(meta_p.read_text()).get("versao") == VERSAO:
         log("arquivo inalterado desde a última execução; nada a fazer."); return
 
     csv = extrair_csv(zp)
@@ -113,11 +119,15 @@ def main():
     d2 = ["mes", "servico", "prestadora", "assunto"]
     n1 = gravar("por_uf", d1 + MEDIDAS, con.execute(AGG.format(dims=", ".join(d1))).fetchall())
     n2 = gravar("por_assunto", d2 + MEDIDAS, con.execute(AGG.format(dims=", ".join(d2))).fetchall())
+    n3 = gravar("por_dia", ["dia", "servico", "prestadora", "dem", "resp", "resol", "aval"], con.execute(AGG_DIA).fetchall())
+    for r in con.execute("SELECT dia, count(*), sum(resp::INT), sum(resol::INT), sum(aval::INT) FROM base "
+                         "WHERE regexp_matches(dia, '^[0-9]{4}-[0-9]{2}-[0-9]{2}$') GROUP BY dia ORDER BY dia DESC LIMIT 5").fetchall():
+        log(f"  dia {r[0]}: total={r[1]} respondidas={r[2]} resolvidas(S)={r[3]} avaliadas={r[4]}")
     mn, mx = con.execute("SELECT min(mes), max(mes) FROM base").fetchone()
     meta_p.write_text(json.dumps({
         "atualizado_em": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "origem": os.environ.get("DATA_URL", str(args.file)), "sha256": digest,
-        "registros_origem": n, "periodo": [mn, mx], "linhas_agregadas": n1 + n2, "medidas": MEDIDAS,
+        "registros_origem": n, "periodo": [mn, mx], "linhas_agregadas": n1 + n2 + n3, "versao": VERSAO, "medidas": MEDIDAS,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     log(f"concluído ({mn} → {mx})")
 

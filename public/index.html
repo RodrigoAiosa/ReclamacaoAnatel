@@ -53,6 +53,15 @@ tbody tr:hover{background:#e9f3ed}
 .tag{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px;background:#efe3c8;color:#7a5a12}
 #tip{position:fixed;z-index:50;pointer-events:none;background:#fff;border:1px solid #ddd;border-radius:6px;box-shadow:0 6px 22px #0003;padding:12px 14px;width:340px;display:none;font-size:12px}
 #tip.wide{width:300px}
+#tip.tbl{width:560px;padding:6px 8px 8px;border-radius:2px}
+#tip table{width:100%;border-collapse:collapse;font-size:12.5px;color:#111}
+#tip th{font-size:12.5px;color:#111;font-weight:400;text-align:right;padding:3px 6px;border-bottom:1px solid #1f7bff;white-space:nowrap}
+#tip td{padding:2px 6px;text-align:right;white-space:nowrap}
+#tip th:first-child,#tip td:first-child{text-align:left}
+#tip tbody tr:nth-child(even){background:#ececec}
+#tip td.bar{min-width:86px}
+#tip tfoot td{font-weight:700;border-top:1px solid #444;padding-top:3px}
+#tip .nota{font-size:11px;color:#777;padding:6px 6px 0}
 #tip h3{margin:0;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
 #tip .s{color:var(--mut);font-size:11px;margin:2px 0 8px}
 #tip .cols{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #eee;border-bottom:1px solid #eee;margin:6px -14px;padding:6px 14px}
@@ -147,8 +156,8 @@ let D = null, charts = {}, pronto = false;
 
 /* ---------- tooltips ---------- */
 const tip = $("tip");
-function mostrarTip(html, x, y, largo) {
-  tip.className = largo ? "wide" : ""; tip.innerHTML = html; tip.style.display = "block";
+function mostrarTip(html, x, y, classe) {
+  tip.className = classe || ""; tip.innerHTML = html; tip.style.display = "block";
   const w = tip.offsetWidth, h = tip.offsetHeight;
   tip.style.left = Math.max(6, Math.min(x + 16, innerWidth - w - 8)) + "px";
   tip.style.top = Math.max(6, Math.min(y + 12, innerHeight - h - 8)) + "px";
@@ -174,11 +183,15 @@ function tipServicos(titulo, servicos, total) {
     servicos.map((s, i) => `<div class="sv"><span>${s.nome}</span><div style="background:${i === 0 ? "#e8493c" : "#3b82e0"}"><b>${num(s.n)}</b><b>${num(s.pct, 2)}%</b></div></div>`).join("");
 }
 function tipMes(m) {
-  const [a, mm] = m.periodo.split("-");
-  return `<h3>${MESES[+mm - 1]}/${a}</h3><div class="s">${num(m.total)} reclamações</div>
-    <div class="cols" style="grid-template-columns:repeat(3,1fr)"><div><span>% respondidas</span><b>${pc(m.pct_respondidas)}</b></div>
-    <div><span>% resolvidas</span><b>${pc(m.pct_resolvidas)}</b></div><div><span>TMR</span><b>${num(m.tmr, 1)}</b><i>dias</i></div></div>
-    <div class="s" style="margin:6px 0 0">Nota média do consumidor: <b>${num(m.nota, 2)}</b></div>`;
+  const dias = (D.dias || {})[m.periodo] || [];
+  if (!dias.length) return `<h3>${MESES[+m.periodo.slice(5) - 1]}/${m.periodo.slice(0, 4)}</h3><div class="s">${num(m.total)} reclamações · sem detalhe diário disponível</div>`;
+  const nome = d => new Date(d + "T12:00:00").toLocaleDateString("pt-BR", {weekday: "long", day: "numeric", month: "long", year: "numeric"});
+  const tot = dias.reduce((a, d) => (a.t += d.total, a.r += d.resolvida, a), {t: 0, r: 0});
+  const barra = p => `style="background:linear-gradient(90deg,#1aa34a ${p || 0}%,transparent ${p || 0}%)"`;
+  return `<table><thead><tr><th>DATA_ABERTURA</th><th>Total Reclamações</th><th>Resolvida</th><th>% Resolvido</th></tr></thead><tbody>` +
+    dias.map(d => `<tr><td>${nome(d.dia)}</td><td>${num(d.total)}</td><td>${num(d.resolvida)}</td><td class="bar" ${barra(d.pct)}>${pc(d.pct, 2)}</td></tr>`).join("") +
+    `</tbody><tfoot><tr><td>Total</td><td>${num(tot.t)}</td><td>${num(tot.r)}</td><td>${tot.t ? pc(100 * tot.r / tot.t, 2) : "–"}</td></tr></tfoot></table>` +
+    (D.assunto_filtra_uf ? `<div class="nota">O filtro de UF não se aplica ao detalhe diário.</div>` : "");
 }
 
 /* ---------- gráficos ---------- */
@@ -189,12 +202,12 @@ const rotulos = {id: "rotulos", afterDatasetsDraw(c) {
     if (horiz) { ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText(t, b.x + 6, b.y); }
     else { ctx.textAlign = "center"; ctx.textBaseline = "bottom"; ctx.fillText(t, b.x, b.y - 4); }
   }); ctx.restore(); }};
-function externo(fn) {
+function externo(fn, classe) {
   return {enabled: false, external: ctx => {
     const t = ctx.tooltip;
     if (!t.opacity || !t.dataPoints) return esconderTip();
     const r = ctx.chart.canvas.getBoundingClientRect(), i = t.dataPoints[0].dataIndex;
-    mostrarTip(fn(i), r.left + t.caretX, r.top + t.caretY, false);
+    mostrarTip(fn(i), r.left + t.caretX, r.top + t.caretY, classe);
   }};
 }
 function grafico(id, cfg) { charts[id]?.destroy(); charts[id] = new Chart($(id), cfg); }
@@ -240,7 +253,7 @@ function render() {
     data: {labels: D.serie.map(m => porAno ? MESES[+m.periodo.slice(5) - 1] : m.periodo),
            datasets: [{data: D.serie.map(m => m.total), borderColor: "#1f7bff", borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5, tension: .25}]},
     options: {maintainAspectRatio: false, interaction: {mode: "index", intersect: false},
-      plugins: {legend: {display: false}, tooltip: externo(i => tipMes(D.serie[i]))},
+      plugins: {legend: {display: false}, tooltip: externo(i => tipMes(D.serie[i]), "tbl")},
       scales: {x: {grid: {display: false}, ticks: {color: "#444", maxTicksLimit: 14}}, y: {display: false, beginAtZero: true}}}});
 
   barras("cUf", D.regional, i => tipSatisfacao("Satisfação dos clientes", D.regional[i].sat, ` · ${D.regional[i].nome}`), true);
