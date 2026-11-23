@@ -39,6 +39,13 @@ def _dias():
     return _cache["dia"]
 
 
+def _ultima_data():
+    """Data de abertura mais recente presente nos dados (para a capa)."""
+    if "ultima" not in _cache:
+        _cache["ultima"] = max((r[0] for r in _dias()), default="")
+    return _cache["ultima"]
+
+
 def _div(a, b, k=1.0, d=2):
     return round(k * a / b, d) if b else None
 
@@ -134,7 +141,7 @@ def montar(q):
         "opcoes": {"anos": sorted({r[0][:4] for r in A}, reverse=True), "servicos": sorted({r[1] for r in A}),
                    "prestadoras": sorted({r[2] for r in A}), "ufs": sorted({r[3] for r in A})},
         "kpis": resumo(tot), "sat": sat(tot), "serie": meses,
-        "dias": dias, "operadoras": top_op, "assuntos": assuntos, "regional": regional,
+        "dias": dias, "ultima_data": _ultima_data(), "operadoras": top_op, "assuntos": assuntos, "regional": regional,
         "assunto_filtra_uf": bool(uf),
     }
 
