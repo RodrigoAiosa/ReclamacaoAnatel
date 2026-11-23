@@ -129,6 +129,19 @@ def _bloco_servicos(A, B, ano, mes, pr, uf, sv, base, no_ano, no_mes, z):
             "mapa": {"operadoras": ops, "assuntos": ass, "totais_op": [int(op_tot[o]) for o in ops], "celulas": celulas}}
 
 
+def _principais(A, n=8):
+    """Operadoras de maior volume nos últimos 12 meses da base (independe dos filtros) — atalhos com ícone.
+    Ignora 'N/I' e empresas marcadas como inativas."""
+    if "principais" not in _cache:
+        meses = sorted({r[0] for r in A}, reverse=True)[:12]
+        tot = defaultdict(float)
+        for r in A:
+            if r[0] in meses:
+                tot[r[2]] += r[4]
+        _cache["principais"] = [k for k, _ in sorted(tot.items(), key=lambda x: -x[1]) if k != "N/I" and "INATIV" not in k.upper()][:n]
+    return _cache["principais"]
+
+
 def montar(q):
     g = lambda k: (q.get(k) or [""])[0]
     ano, mes, sv, pr, uf = g("ano"), g("mes"), g("servico"), g("prestadora"), g("uf")
@@ -188,7 +201,7 @@ def montar(q):
     return {
         "meta": meta,
         "opcoes": {"anos": sorted({r[0][:4] for r in A}, reverse=True), "servicos": sorted({r[1] for r in A}),
-                   "prestadoras": sorted({r[2] for r in A}), "ufs": sorted({r[3] for r in A})},
+                   "prestadoras": sorted({r[2] for r in A}), "principais": _principais(A), "ufs": sorted({r[3] for r in A})},
         "kpis": resumo(tot), "sat": sat(tot), "serie": meses,
         "dias": dias, "ultima_data": _ultima_data(), "operadoras": top_op, "assuntos": assuntos, "regional": regional,
         "assunto_filtra_uf": bool(uf), "servicos": servicos,

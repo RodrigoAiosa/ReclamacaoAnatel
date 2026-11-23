@@ -1,0 +1,5 @@
+Ícones das operadoras (opcional)
+Coloque aqui o logotipo de cada operadora, com o nome do arquivo em minúsculas, sem acento e com hífen:
+  claro.svg | vivo.svg | tim.svg | nio.svg | vero-internet.svg | sky.svg | giga.svg | algar.svg
+Também vale .png (quadrado, fundo transparente ou branco, de preferência 128x128 ou maior).
+Se o arquivo não existir, o filtro mostra um ícone com a inicial da operadora.
