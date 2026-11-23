@@ -136,6 +136,17 @@ footer{font-size:11px;color:#4f6c5e;margin:10px 4px 0;text-align:center}
 .meto ul{margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.5}
 .niv{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;font-size:13px;margin-top:6px;align-items:center}
 .niv .tag{justify-self:start}
+.guia{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:8px}
+.guia h3{margin:0 0 4px;font-size:14px;color:var(--verde2);display:flex;align-items:center;gap:6px}
+.guia h3 b{background:var(--verde2);color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.guia p{margin:0 0 8px;font-size:12.5px;color:#4a5a52;line-height:1.4}
+.guia ul{margin:0;padding-left:16px;font-size:12.5px;line-height:1.45;color:#2c3a33}.guia li{margin-bottom:5px}
+.fluxo{counter-reset:f;list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.fluxo li{counter-increment:f;background:#f1f6f3;border:1px solid #d5e4db;border-radius:10px;padding:10px 10px 10px 12px;font-size:12.5px;line-height:1.4;color:#2c3a33;position:relative}
+.fluxo li:before{content:counter(f);display:block;font-weight:800;color:var(--verde2);font-size:18px;margin-bottom:2px}
+.fluxo li b{display:block;color:#16492f}
+@media(max-width:1100px){.guia{grid-template-columns:1fr 1fr}.fluxo{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.guia,.fluxo{grid-template-columns:1fr}}
 @media(max-width:1100px){.meto{grid-template-columns:1fr}}
 #ops{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .op{display:flex;align-items:center;gap:8px;padding:4px 14px 4px 5px;background:var(--card);border:2px solid transparent;border-radius:999px;cursor:pointer;font:inherit;font-size:13px;font-weight:600;color:var(--ink);box-shadow:0 1px 3px #0002;transition:border-color .15s,background .15s,transform .15s}
@@ -237,6 +248,46 @@ footer{font-size:11px;color:#4f6c5e;margin:10px 4px 0;text-align:center}
 
       <div class="pane" id="p_metodologia">
         <div class="meto">
+          <div class="card"><h2>Sobre este painel</h2><div class="sub">Para que serve e como navegar</div><dl>
+            <dt>Objetivo</dt><dd>Acompanhar a qualidade do atendimento das prestadoras de telecomunicações a partir das reclamações registradas na Anatel (base “Consumidor — Indicadores de Qualidade de Atendimento”): quanto se reclama, de quê, onde, quão rápido a empresa responde e se o consumidor fica satisfeito.</dd>
+            <dt>Recorte dos dados</dt><dd>Cada linha da origem é uma reclamação, agregada por mês, serviço, prestadora, UF e assunto. O painel mostra só totais, nunca dados de pessoas.</dd>
+            <dt>Como navegar</dt><dd>Use as abas para trocar de ângulo (geral, regional, operadora, serviços e assuntos) e a barra lateral e os ícones das operadoras para filtrar. Tudo se atualiza junto: indicadores, gráficos e tabelas.</dd>
+            <dt>Interações</dt><dd>Passe o mouse sobre barras, linhas, células e linhas de tabela para abrir o detalhe (volume, percentuais, satisfação). No mapa, clique em um estado para filtrar o painel por ele.</dd>
+            <dt>Cores</dt><dd>Verde escuro = maior valor da escala; no mapa de calor, quanto mais escura a célula, maior a participação. Nos níveis de satisfação: verde = Excelente/Bom, laranja = Atenção, vermelho = Crítico.</dd>
+          </dl></div>
+          <div class="card"><h2>Filtros e como se comportam</h2><div class="sub">O que cada seletor altera, e as exceções</div><dl>
+            <dt>Ano e Mês</dt><dd>Definem o período dos indicadores, da satisfação e dos rankings. Sem mês escolhido, vale o ano inteiro.</dd>
+            <dt>Serviço</dt><dd>Restringe tudo a um tipo de serviço, exceto as comparações entre serviços (aba Serviços e Assuntos), que sempre mostram todos para permitir comparar.</dd>
+            <dt>Operadora e ícones</dt><dd>Filtram por prestadora. Os ícones Claro, Vivo e TIM são atalhos para as três maiores; “Todas” limpa o filtro. O mapa de calor Operadora × Assunto ignora este filtro, pois compara as operadoras entre si.</dd>
+            <dt>UF</dt><dd>Restringe a um estado (também pelo clique no mapa). Não se aplica aos gráficos por assunto nem ao detalhe diário, que não são agregados por UF.</dd>
+            <dt>Combinações sem dados</dt><dd>Quando um recorte não tem avaliações, o nível aparece como “Sem dados”, em vez de um zero que pareceria resultado ruim.</dd>
+          </dl></div>
+        </div>
+        <div class="card" style="margin-bottom:12px"><h2>Guia das abas e gráficos</h2><div class="sub">O que cada visão mostra e como ler</div>
+          <div class="guia">
+            <div><h3><b>1</b>Análise Geral</h3><p>A fotografia do período.</p><ul>
+              <li><b>Indicadores (cartões):</b> total de reclamações, respondidas, não respondidas, sinalizadas como resolvidas e não resolvidas, e TMR.</li>
+              <li><b>Reclamações por Operadora:</b> as 5 com maior volume.</li>
+              <li><b>Índice de Satisfação:</b> nota média, % satisfeitos, % insatisfeitos, saldo e a distribuição por nota.</li>
+              <li><b>Assunto da Reclamação:</b> os motivos mais frequentes.</li>
+              <li><b>Variação por Mês:</b> tendência; o último mês costuma estar incompleto e parece uma queda.</li></ul></div>
+            <div><h3><b>2</b>Análise Regional</h3><p>Onde as reclamações se concentram.</p><ul>
+              <li><b>Mapa por UF:</b> colore os estados pela métrica escolhida no seletor; passe o mouse para ver a satisfação e clique para filtrar.</li>
+              <li><b>Tabela por UF:</b> volume, % respondidas, % resolvidas, TMR e nota, ordenada por volume.</li>
+              <li>Estados populosos lideram o volume; use os percentuais para comparar a qualidade, não só o tamanho.</li></ul></div>
+            <div><h3><b>3</b>Análise Operadora</h3><p>Quem atende melhor.</p><ul>
+              <li><b>Ranking de Operadoras:</b> as 20 maiores no filtro atual: reclamações, % respondidas, % resolvidas, TMR, nota média, satisfeitos e insatisfeitos.</li>
+              <li>Passe o mouse em uma linha para ver a distribuição das reclamações por serviço.</li>
+              <li>Compare sempre volume e percentuais: operadora grande reclama mais em números absolutos.</li></ul></div>
+            <div><h3><b>4</b>Serviços e Assuntos</h3><p>O que gera o problema.</p><ul>
+              <li><b>Reclamações e TMR por Serviço:</b> a linha tracejada é a média geral do tempo de resposta.</li>
+              <li><b>Assuntos por Serviço (mapa de calor):</b> % das reclamações de cada serviço por assunto; células claras têm pouca participação.</li>
+              <li><b>Evolução Mensal por Serviço:</b> tendência de cada serviço no tooltip.</li>
+              <li><b>Operadora × Assunto:</b> onde cada uma concentra suas reclamações (as 10 maiores e os 8 assuntos principais).</li>
+              <li><b>Reabertas:</b> vermelho = acima da média geral.</li>
+              <li><b>Volume × Satisfação:</b> eixo horizontal logarítmico; a cor é o nível de satisfação.</li></ul></div>
+          </div></div>
+        <div class="meto">
           <div class="card"><h2>Glossário</h2><div class="sub">Termos usados neste painel</div><dl id="glossario"></dl></div>
           <div class="card"><h2>Como cada indicador é calculado</h2><div class="sub">Com exemplo numérico calculado sobre toda a base de dados</div><dl id="formulas"></dl></div>
         </div>
@@ -248,6 +299,17 @@ footer{font-size:11px;color:#4f6c5e;margin:10px 4px 0;text-align:center}
           <div class="card"><h2>Fonte e atualização</h2><div class="sub">De onde vêm os dados e quando foram atualizados</div><dl id="fonte"></dl></div>
           <div class="card"><h2>Limitações e cuidados</h2><div class="sub">Para interpretar os números com segurança</div><ul id="limites"></ul></div>
         </div>
+        <div class="card" style="margin-bottom:12px"><h2>Como os dados chegam ao painel</h2><div class="sub">Do arquivo da Anatel até a tela, sem passo manual</div>
+          <ol class="fluxo">
+            <li><b>Fonte</b>A Anatel publica um arquivo ZIP (~2,4 GB) com todas as reclamações, atualizado a cada ~2 dias.</li>
+            <li><b>Verificação diária</b>Todo dia às 03:43 (Brasília) o GitHub Actions confere se o arquivo mudou (impressão digital SHA-256).</li>
+            <li><b>Processamento</b>Se há novidade, um script Python com DuckDB lê as ~12 milhões de linhas e agrega em cerca de 25 segundos.</li>
+            <li><b>Armazenamento</b>Os agregados, bem menores, são gravados em arquivos compactados no GitHub, junto com o log da execução.</li>
+            <li><b>Publicação</b>O GitHub avisa a Vercel, que republica o painel automaticamente em cerca de um minuto.</li>
+            <li><b>Consulta</b>A cada filtro, uma API em Python calcula os indicadores e o navegador desenha os gráficos.</li>
+          </ol>
+          <div class="meto" style="display:block;margin:6px 0 0"><dl><dt>Auditoria</dt><dd>Cada execução (com ou sem dados novos) registra uma linha no arquivo <code>logs/atualizacoes.csv</code>: data e hora, resultado, gatilho, tamanho da origem, registros e duração.</dd>
+          <dt>Código aberto</dt><dd>O código e o histórico de atualizações estão no repositório <code>RodrigoAiosa/ReclamacaoAnatel</code>, e qualquer número do painel pode ser refeito a partir da base da Anatel.</dd></dl></div></div>
       </div>
       <footer id="rodape"></footer>
     </main>
