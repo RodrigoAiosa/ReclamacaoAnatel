@@ -180,6 +180,15 @@ def montar(q):
     def servs(d, total):
         return [{"nome": k, "n": int(n), "pct": _div(n, total, 100)} for k, n in sorted(d.items(), key=lambda x: -x[1]) if n]
 
+    # evolução mensal por operadora (aba Operadora): respeita ano/serviço/UF; ignora Operadora e Mês para poder comparar
+    evo_op, evo_tot, periodos = defaultdict(lambda: defaultdict(float)), defaultdict(float), set()
+    for r in A:
+        if (not sv or r[1] == sv) and no_ano(r) and (not uf or r[3] == uf):
+            evo_op[r[2]][r[0]] += r[4]; evo_tot[r[2]] += r[4]; periodos.add(r[0])
+    periodos = sorted(periodos)
+    evolucao_op = {"periodos": periodos, "series": [
+        {"nome": n, "valores": [int(evo_op[n].get(p, 0)) for p in periodos]}
+        for n in sorted(evo_tot, key=lambda k: -evo_tot[k])[:6] if n != "N/I"]}
     ops = sorted(por_op.items(), key=lambda x: -x[1][0])
     top_op = [{"nome": k, "total": int(v[0]), "sat": sat(v), "servicos": servs(op_serv[k], v[0]), **resumo(v)} for k, v in ops[:20]]
     assuntos = [{"nome": k, "total": int(v[0]), "servicos": servs(ass_serv[k], v[0])}
@@ -210,7 +219,7 @@ def montar(q):
         "meta": meta,
         "opcoes": {"anos": sorted({r[0][:4] for r in A}, reverse=True), "meses": _meses_por_ano(A), "servicos": sorted({r[1] for r in A}),
                    "prestadoras": sorted({r[2] for r in A}), "principais": _principais(A), "ufs": sorted({r[3] for r in A})},
-        "kpis": resumo(tot), "sat": sat(tot), "serie": meses,
+        "kpis": resumo(tot), "sat": sat(tot), "serie": meses, "evolucao_op": evolucao_op,
         "dias": dias, "ultima_data": _ultima_data(), "operadoras": top_op, "assuntos": assuntos, "regional": regional,
         "assunto_filtra_uf": bool(uf), "servicos": servicos,
     }
