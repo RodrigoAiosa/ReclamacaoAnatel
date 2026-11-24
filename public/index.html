@@ -40,6 +40,10 @@ aside select{width:100%;padding:8px 9px;border:2px solid #fff;border-radius:4px;
 main{min-width:0}
 .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:12px}
 .card{background:var(--card);border-radius:12px;box-shadow:0 1px 4px #0002,inset 0 0 0 1px #fff8;padding:12px 14px;min-width:0}
+.notas{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;align-content:start}
+.nt{border:1px solid var(--linha);border-radius:12px;padding:10px 12px;background:#fbfdfc}
+.nt h3{margin:0;font-size:14px;color:#16492f;display:flex;align-items:center;gap:6px;flex-wrap:wrap}.nt .s{font-size:11px;color:var(--mut);margin:1px 0 6px}
+.nt .dr{font-size:11.5px;margin:4px 0}
 .destaques{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
 .dst{display:flex;flex-direction:column;gap:2px;padding:12px 14px;min-height:96px;position:relative;overflow:hidden}
 .dst:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--c,#6fae8a)}
@@ -243,9 +247,9 @@ footer{font-size:11px;color:#4f6c5e;margin:10px 4px 0;text-align:center}
 
       <div class="pane" id="p_operadora">
         <div class="destaques" id="destOp"></div>
-        <div class="g g2">
+        <div class="g" style="grid-template-columns:1fr">
           <div class="card"><h2>Evolução Mensal por Operadora</h2><div class="sub">As 6 maiores em reclamações <span class="avi">(ignora os filtros de Operadora e Mês)</span> — passe o mouse para ver todas no mês</div><div class="cv"><canvas id="cEvOp"></canvas></div></div>
-          <div class="card"><h2>Distribuição das Notas por Operadora</h2><div class="sub">% de avaliações por nota (1 a 5), 10 maiores — passe o mouse para ver a satisfação</div><div class="cv"><canvas id="cNotaOp"></canvas></div></div>
+          <div class="card"><h2>Distribuição das Notas por Operadora</h2><div class="sub">% de avaliações por categoria de nota, 10 maiores operadoras</div><div class="notas" id="gNotas"></div></div>
         </div>
         <div class="card"><h2>Ranking de Operadoras</h2><div class="sub">Top 20 por volume no filtro atual — passe o mouse para ver a distribuição por serviço</div><table id="tOp"></table></div>
       </div>
@@ -424,7 +428,7 @@ function barras(id, itens, tooltipFn, horiz) {
                y: {display: horiz, beginAtZero: true, grid: {display: false}, border: {display: false}, ticks: {color: "#222", font: {size: 12},
                     callback: function (v) { return horiz ? quebra(this.getLabelForValue(v), 28) : ""; }}}}}});
 }
-["cEvOp", "cNotaOp", "cOp", "cAss", "cMes", "cSv", "cTmr", "cEv", "cReab", "cDisp", "cNota"].forEach(id => $(id).addEventListener("mouseleave", esconderTip));
+["cEvOp", "cOp", "cAss", "cMes", "cSv", "cTmr", "cEv", "cReab", "cDisp", "cNota"].forEach(id => $(id).addEventListener("mouseleave", esconderTip));
 
 /* ---------- mapa do Brasil por UF ---------- */
 const UF_NOME = {AC:"Acre",AL:"Alagoas",AM:"Amazonas",AP:"Amapá",BA:"Bahia",CE:"Ceará",DF:"Distrito Federal",ES:"Espírito Santo",GO:"Goiás",MA:"Maranhão",MG:"Minas Gerais",MS:"Mato Grosso do Sul",MT:"Mato Grosso",PA:"Pará",PB:"Paraíba",PE:"Pernambuco",PI:"Piauí",PR:"Paraná",RJ:"Rio de Janeiro",RN:"Rio Grande do Norte",RO:"Rondônia",RR:"Roraima",RS:"Rio Grande do Sul",SC:"Santa Catarina",SE:"Sergipe",SP:"São Paulo",TO:"Tocantins"};
@@ -678,14 +682,9 @@ function renderOperadora() {
             E.series.map((x, j) => [x.nome, num(x.valores[i]), corOp(x.nome, j)]).sort((a, b) => b[1].replace(/\D/g, "") - a[1].replace(/\D/g, ""))); }, "wide")},
       scales: {x: {grid: {display: false}, ticks: {color: "#444", maxTicksLimit: 14}}, y: {beginAtZero: true, grid: {color: "#e6eee9"}, ticks: {callback: v => compacto(v)}}}}});
 
-  const B = O.slice(0, 10).filter(o => o.sat.avaliacoes), cats = ["Muito insat.", "Insatisfeito", "Indiferente", "Satisfeito", "Muito satisf."];
-  const pct = (o, c) => (o.sat.dist.find(d => d.label === c) || {}).pct || 0;
-  grafico("cNotaOp", {type: "bar",
-    data: {labels: B.map(o => o.nome), datasets: cats.map(c => ({label: c, data: B.map(o => pct(o, c)), backgroundColor: COR_NOTA[c], borderWidth: 1, borderColor: "#fff", barPercentage: .78}))},
-    options: {indexAxis: "y", maintainAspectRatio: false, interaction: {mode: "nearest", axis: "y", intersect: false},
-      plugins: {legend: {position: "bottom", labels: {boxWidth: 10, font: {size: 11}}},
-        tooltip: dsExterno(i => tipSatisfacao(B[i].nome, B[i].sat, ` · ${num(B[i].total)} reclamações`))},
-      scales: {x: {stacked: true, max: 100, grid: {color: "#e6eee9"}, ticks: {callback: v => v + "%"}}, y: {stacked: true, grid: {display: false}, border: {display: false}, ticks: {color: "#222", font: {size: 12}}}}}});
+  const B = O.slice(0, 10).filter(o => o.sat.avaliacoes);   // distribuição por categoria, uma ficha por operadora (mesmo gráfico do tooltip)
+  $("gNotas").innerHTML = B.map(o => `<div class="nt"><h3>${o.nome}<span class="tag">${o.sat.nivel}</span></h3><div class="s">${num(o.sat.avaliacoes)} avaliações · nota média ${num(o.sat.nota, 2)}</div>` +
+    o.sat.dist.map(d => `<div class="dr"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${COR[d.label]};margin-right:5px"></i>${d.label}</span><div class="b"><i style="width:${d.pct}%;background:${COR[d.label]}"></i></div><b>${num(d.pct, 0).padStart(2, "0")}%</b><em>${num(d.n)}</em></div>`).join("") + `</div>`).join("") || `<div class="nota">Sem avaliações no filtro atual.</div>`;
 }
 
 function render() {

@@ -29,6 +29,8 @@ button{font:inherit;cursor:pointer}
 .aviso{background:#fff4dc;color:#7a5200;border-radius:12px;padding:10px 12px;margin:10px 14px 0;font-size:13px;display:none}
 .carr{height:260px;position:relative}.carr.alto{height:340px}
 /* kpis com flip */
+.nt{display:block;width:100%;text-align:left;border:1px solid var(--linha);border-radius:14px;padding:10px 12px;background:#fbfdfc;margin-bottom:9px}
+.nt h3{margin:0;font-size:15px;color:#16492f;display:flex;align-items:center;gap:6px;flex-wrap:wrap}.nt .s{font-size:11.5px;color:var(--mut);margin:1px 0 6px}.nt .dr{margin:4px 0}
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .flip{perspective:800px;height:104px}.flip .fi{position:relative;height:100%;transition:transform .5s;transform-style:preserve-3d}.flip.vira .fi{transform:rotateY(180deg)}
 .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:#fff;border-radius:16px;padding:11px 12px;display:flex;flex-direction:column;box-shadow:0 1px 2px rgba(31,107,70,.08)}
@@ -121,7 +123,7 @@ code{background:#eef5f0;border-radius:5px;padding:1px 6px;font-size:12.5px}.vd{d
   <section class="view" id="v_operadora">
     <div class="dst" id="destOp"></div><div class="nota" id="notaDst" style="margin:-4px 4px 12px"></div>
     <div class="card"><h2>Evolução Mensal por Operadora</h2><div class="sub">As 6 maiores <span style="color:#a06a00">(ignora os filtros de Operadora e Mês)</span> — toque para ver o mês</div><div class="carr alto"><canvas id="cEvOp"></canvas></div></div>
-    <div class="card"><h2>Distribuição das Notas</h2><div class="sub">% de avaliações por nota, 10 maiores — toque para ver a satisfação</div><div class="carr alto"><canvas id="cNotaOp"></canvas></div></div>
+    <div class="card"><h2>Distribuição das Notas</h2><div class="sub">% de avaliações por categoria de nota, 10 maiores — toque para ver o detalhe</div><div id="gNotas"></div></div>
     <div class="card"><h2>Ranking de Operadoras</h2><div class="sub">Top 20 por volume — toque para ver o detalhe</div><div id="lOp"></div></div>
   </section>
 
@@ -324,11 +326,10 @@ function renderOperadora() {
       onClick: (e, els) => { if (!els.length) return; const i = els[0].index, p = E.periodos[i], tot = E.series.reduce((a, x) => a + x.valores[i], 0);
         abrir(`<h3>${MESES[+p.slice(5) - 1]}/${p.slice(0, 4)}</h3><div class="s">${num(tot)} reclamações nas 6 maiores</div>` + E.series.map((x, j) => [x, j]).sort((a, b) => b[0].valores[i] - a[0].valores[i]).map(([x, j]) => kv(esc(x.nome), num(x.valores[i]), PAL[j % 6])).join("")); },
       scales: {x: {grid: {display: false}, ticks: {maxTicksLimit: 7, maxRotation: 0}}, y: {beginAtZero: true, grid: {color: "#e6eee9"}, ticks: {callback: v => compacto(v)}}}}});
-  const B = O.slice(0, 10).filter(o => o.sat.avaliacoes), cats = ["Muito insat.", "Insatisfeito", "Indiferente", "Satisfeito", "Muito satisf."], pct = (o, c) => (o.sat.dist.find(d => d.label === c) || {}).pct || 0;
-  grafico("cNotaOp", {type: "bar", data: {labels: B.map(o => o.nome), datasets: cats.map(c => ({label: c, data: B.map(o => pct(o, c)), backgroundColor: COR[c], borderWidth: 1, borderColor: "#fff", barPercentage: .8}))},
-    options: {indexAxis: "y", maintainAspectRatio: false, interaction: {mode: "nearest", axis: "y", intersect: false}, plugins: {legend: {position: "bottom", labels: {boxWidth: 9, font: {size: 10}}}, tooltip: {enabled: false}},
-      onClick: (e, els) => { if (els.length) sheetOp(B[els[0].index]); },
-      scales: {x: {stacked: true, max: 100, grid: {color: "#e6eee9"}, ticks: {callback: v => v + "%", maxTicksLimit: 6}}, y: {stacked: true, grid: {display: false}, border: {display: false}, ticks: {font: {size: 10.5}, color: "#222"}}}}});
+  const B = O.slice(0, 10).filter(o => o.sat.avaliacoes);
+  $("gNotas").innerHTML = B.map((o, i) => `<button class="nt" data-i="${i}"><h3>${esc(o.nome)}${tagNivel(o.sat)}</h3><div class="s">${num(o.sat.avaliacoes)} avaliações · nota média ${num(o.sat.nota, 2)}</div>` +
+    o.sat.dist.map(d => `<div class="dr"><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${COR[d.label]};margin-right:5px"></i>${d.label}</span><div class="b"><i style="width:${d.pct}%;background:${COR[d.label]}"></i></div><b>${num(d.pct, 0)}%</b><em>${num(d.n)}</em></div>`).join("") + `</button>`).join("") || `<div class="nota">Sem avaliações no filtro atual.</div>`;
+  $("gNotas").onclick = e => { const b = e.target.closest(".nt"); if (b) sheetOp(B[+b.dataset.i]); };
   $("lOp").innerHTML = O.map((o, i) => `<button class="li" data-i="${i}"><div class="h"><b>${esc(o.nome)}${tagNivel(o.sat)}</b><span>${num(o.total)}</span></div>
     <div class="g"><div><b>${pc(o.pct_respondidas, 0)}</b>respondidas</div><div><b>${pc(o.pct_resolvidas, 0)}</b>resolvidas</div><div><b>${num(o.tmr, 1)}</b>TMR dias</div><div><b>${num(o.sat.nota, 2)}</b>nota</div></div></button>`).join("");
   $("lOp").onclick = e => { const b = e.target.closest(".li"); if (b) sheetOp(O[+b.dataset.i]); };
