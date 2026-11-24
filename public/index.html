@@ -126,8 +126,11 @@ footer{font-size:11px;color:#4f6c5e;margin:10px 4px 0;text-align:center}
 .pane{display:none}.pane.on{display:block}
 @media(max-width:1100px){.moldura{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr}.tabs{right:92px;top:8px}}
 @media(max-width:600px){.kpis{grid-template-columns:repeat(2,1fr)}}
-.capa{max-width:1500px;margin:0 auto;padding:22px 22px 0;container-type:inline-size;position:relative}
-.capa .wrap{position:relative}
+.capa{max-width:2400px;margin:0 auto;padding:16px 22px;position:relative;min-height:100vh;display:flex;align-items:center}
+@supports(height:100dvh){.capa{min-height:100dvh}}
+/* A capa cabe inteira na janela: largura limitada pela largura disponível E pela altura da tela (proporção 1590×892) */
+.capa .wrap{position:relative;margin:0 auto;flex:0 1 auto;container-type:inline-size;width:min(100%,calc((100vh - 32px) * 1590 / 892))}
+@supports(height:100dvh){.capa .wrap{width:min(100%,calc((100dvh - 32px) * 1590 / 892))}}
 .capa img{width:100%;height:auto;display:block;border-radius:18px;box-shadow:0 4px 18px #0003}
 .capa .data{position:absolute;left:0;right:0;bottom:.7cqw;text-align:center;font-size:1.65cqw;color:#1a1a1a;pointer-events:none}
 .capa .data:empty{display:none}
@@ -797,7 +800,7 @@ async function carregar() {
 }
 function rota() {
   const painel = location.hash === "#painel";
-  $("capa").style.display = painel ? "none" : "block"; $("painel").style.display = painel ? "block" : "none";
+  $("capa").style.display = painel ? "none" : "flex"; $("painel").style.display = painel ? "block" : "none";
   window.scrollTo(0, 0);
   if (painel) requestAnimationFrame(() => Object.values(charts).forEach(c => c.resize()));
 }
