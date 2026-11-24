@@ -5,14 +5,14 @@
 <rect x="14" y="60" width="1372" height="130" rx="16" fill="#e6f1ea" opacity=".55"/>
 <text transform="translate(40 125.0) rotate(-90)" font-size="15" font-weight="800" letter-spacing="2" fill="#14573a" text-anchor="middle">GATILHOS</text>
 <rect x="130" y="90" width="360" height="70" rx="12" fill="#ffffff" stroke="#1f6b46" stroke-width="2"/>
-<text x="310.0" y="119.8" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">⏰ Agendador externo (cron-job.org)</text>
-<text x="310.0" y="140.8" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">dias ímpares · 03:43 (Brasília)</text>
+<text x="310.0" y="119.8" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">⏰ cron-job.org → API do GitHub</text>
+<text x="310.0" y="140.8" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">workflow_dispatch · dias ímpares, 03:43</text>
 <rect x="520" y="90" width="360" height="70" rx="12" fill="#ffffff" stroke="#1f6b46" stroke-width="2"/>
 <text x="700.0" y="119.8" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">▶ Execução manual</text>
-<text x="700.0" y="140.8" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">Run workflow no GitHub</text>
+<text x="700.0" y="140.8" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">botão Run workflow (workflow_dispatch)</text>
 <rect x="910" y="90" width="360" height="70" rx="12" fill="#ffffff" stroke="#1f6b46" stroke-width="2"/>
 <text x="1090.0" y="119.8" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">⬆ Push em scripts/etl.py</text>
-<text x="1090.0" y="140.8" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">ou no arquivo do workflow</text>
+<text x="1090.0" y="140.8" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">ou no arquivo do workflow (paths)</text>
 <path d="M310,160 L310,200 L700,200 L700,232" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
 <path d="M700,160 L700,232" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
 <path d="M1090,160 L1090,200 L700,200 L700,232" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
@@ -22,21 +22,23 @@
 <text x="700.0" y="260.8" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">1 · Preparar o ambiente</text>
 <text x="700.0" y="281.8" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">checkout · Python 3.12 · pip install duckdb (com cache)</text>
 <path d="M700,297 L700,330" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
+<rect x="64" y="322" width="962" height="610" rx="14" fill="none" stroke="#1f6b46" stroke-width="1.6" stroke-dasharray="3 5"/>
+<text x="76" y="344.4" font-size="12.5" font-weight="700" fill="#14573a" text-anchor="start">scripts/etl.py · passo “Rodar ETL” (timeout 10 min)</text>
 <rect x="440" y="332" width="520" height="62" rx="12" fill="#ffffff" stroke="#1f6b46" stroke-width="2"/>
 <text x="700.0" y="357.8" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">2 · Baixar o ZIP da Anatel</text>
-<text x="700.0" y="378.8" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">variável DATA_URL (ou link oficial) · timeout de 10 min</text>
+<text x="700.0" y="378.8" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">variável DATA_URL (ou link oficial da Anatel)</text>
 <rect x="1060" y="318" width="300" height="92" rx="12" fill="#fff8d6" stroke="#b58900" stroke-width="2"/>
 <text x="1210.0" y="348.2" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">Anatel · Dados abertos</text>
-<text x="1210.0" y="369.2" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">ZIP ~2,4 GB · ~12 mi de linhas</text>
-<text x="1210.0" y="390.2" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">1 linha por reclamação</text>
+<text x="1210.0" y="369.2" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">ZIP ~102 MB · CSV ~2,3 GB</text>
+<text x="1210.0" y="390.2" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">~12 mi de linhas · 1 por reclamação</text>
 <path d="M960,363 L1060,363" fill="none" stroke="#b58900" stroke-width="2.4" marker-end="url(#ah)"/>
 <rect x="974.2" y="333" width="71.6" height="22" rx="6" fill="#f4faf6" stroke="#b58900" stroke-width="1"/>
 <text x="1010" y="349.4" font-size="12.5" font-weight="600" fill="#14573a" text-anchor="middle">download</text>
 <path d="M700,394 L700,438" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
 <polygon points="700,440 940,505 700,570 460,505" fill="#ffffff" stroke="#1f6b46" stroke-width="2"/>
-<text x="700" y="489.9" font-size="14" font-weight="700" fill="#1b2b24" text-anchor="middle">3 · Arquivo igual ao da</text>
-<text x="700" y="509.9" font-size="14" font-weight="700" fill="#1b2b24" text-anchor="middle">última execução?</text>
-<text x="700" y="529.9" font-size="14" font-weight="400" fill="#1b2b24" text-anchor="middle">mesmo sha256 e mesma versão do ETL</text>
+<text x="700" y="490.2" font-size="13.5" font-weight="700" fill="#1b2b24" text-anchor="middle">3 · Arquivo igual ao da</text>
+<text x="700" y="509.7" font-size="13.5" font-weight="700" fill="#1b2b24" text-anchor="middle">última execução?</text>
+<text x="700" y="529.2" font-size="13.5" font-weight="400" fill="#1b2b24" text-anchor="middle">sha256 e versão do ETL × data/meta.json</text>
 <path d="M460,505 L330,505" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
 <rect x="348.4" y="475" width="93.2" height="22" rx="6" fill="#f4faf6" stroke="#2e7d4f" stroke-width="1"/>
 <text x="395" y="491.4" font-size="12.5" font-weight="600" fill="#14573a" text-anchor="middle">sim (igual)</text>
@@ -49,7 +51,7 @@
 <rect x="689.0" y="580" width="122.0" height="22" rx="6" fill="#f4faf6" stroke="#2e7d4f" stroke-width="1"/>
 <text x="750" y="596.4" font-size="12.5" font-weight="600" fill="#14573a" text-anchor="middle">não (diferente)</text>
 <rect x="400" y="614" width="600" height="96" rx="12" fill="#ffffff" stroke="#1f6b46" stroke-width="2"/>
-<text x="700.0" y="646.2" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">4 · Dados novos: extrair o CSV e agregar com DuckDB (~25 s)</text>
+<text x="700.0" y="646.2" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">4 · Extrair o CSV e agregar com DuckDB (~25 s)</text>
 <text x="700.0" y="667.2" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">mês × serviço × prestadora × UF | assunto | dia</text>
 <text x="700.0" y="688.2" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">demandas, respostas, resolvidas, reabertas, notas 1–5, prazo</text>
 <path d="M700,710 L700,748" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
@@ -58,10 +60,10 @@
 <text x="700.0" y="790.2" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">data/por_uf · por_assunto · por_dia (.json.gz, determinístico)</text>
 <text x="700.0" y="811.2" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">meta.json · verificacao.json</text>
 <rect x="1060" y="622" width="300" height="80" rx="12" fill="#fdecec" stroke="#c0392b" stroke-width="2" stroke-dasharray="7 5"/>
-<text x="1210.0" y="647.2" font-size="13.5" font-weight="700" fill="#1b2b24" text-anchor="middle">Falha no ETL</text>
+<text x="1210.0" y="647.2" font-size="13.5" font-weight="700" fill="#1b2b24" text-anchor="middle">Falha em qualquer etapa</text>
 <text x="1210.0" y="666.7" font-size="13.5" font-weight="400" fill="#1b2b24" text-anchor="middle">status = erro (mensagem no log)</text>
 <text x="1210.0" y="686.2" font-size="13.5" font-weight="400" fill="#1b2b24" text-anchor="middle">os dados NÃO são commitados</text>
-<path d="M1000,662 L1060,662" fill="none" stroke="#c0392b" stroke-width="2.4" stroke-dasharray="7 5" marker-end="url(#ah)"/>
+<path d="M1026,662 L1060,662" fill="none" stroke="#c0392b" stroke-width="2.4" stroke-dasharray="7 5" marker-end="url(#ah)"/>
 <path d="M700,820 L700,852" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
 <rect x="400" y="854" width="600" height="60" rx="12" fill="#ffffff" stroke="#1f6b46" stroke-width="2"/>
 <text x="700.0" y="878.8" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">6 · Registrar em logs/atualizacoes.csv</text>
@@ -69,17 +71,18 @@
 <path d="M205,570 L205,884 L400,884" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
 <path d="M1210,702 L1210,884 L1000,884" fill="none" stroke="#c0392b" stroke-width="2.4" stroke-dasharray="7 5" marker-end="url(#ah)"/>
 <path d="M700,914 L700,960" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
-<rect x="340" y="960" width="720" height="56" rx="12" fill="#ffffff" stroke="#1f6b46" stroke-width="2"/>
-<text x="700.0" y="982.8" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">7 · Commit do bot  (if: always) + git push</text>
-<text x="700.0" y="1003.8" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">logs/ sempre · data/ só se o ETL deu certo</text>
+<rect x="340" y="960" width="720" height="74" rx="12" fill="#ffffff" stroke="#1f6b46" stroke-width="2"/>
+<text x="700.0" y="981.9" font-size="14" font-weight="700" fill="#1b2b24" text-anchor="middle">7 · Commit do bot  (if: always) + git push</text>
+<text x="700.0" y="1001.9" font-size="14" font-weight="400" fill="#1b2b24" text-anchor="middle">logs/ sempre · data/ só se o ETL deu certo</text>
+<text x="700.0" y="1021.9" font-size="14" font-weight="400" fill="#1b2b24" text-anchor="middle">verificacao.json muda a cada execução: todo run gera commit</text>
 <rect x="14" y="1100" width="1372" height="140" rx="16" fill="#e6f1ea" opacity=".55"/>
 <text transform="translate(40 1170.0) rotate(-90)" font-size="15" font-weight="800" letter-spacing="2" fill="#14573a" text-anchor="middle">REPOSITÓRIO</text>
-<path d="M700,1016 L700,1114" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
-<rect x="678.6" y="1048" width="42.8" height="22" rx="6" fill="#f4faf6" stroke="#2e7d4f" stroke-width="1"/>
-<text x="700" y="1064.4" font-size="12.5" font-weight="600" fill="#14573a" text-anchor="middle">push</text>
+<path d="M700,1034 L700,1114" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
+<rect x="678.6" y="1062" width="42.8" height="22" rx="6" fill="#f4faf6" stroke="#2e7d4f" stroke-width="1"/>
+<text x="700" y="1078.4" font-size="12.5" font-weight="600" fill="#14573a" text-anchor="middle">push</text>
 <rect x="130" y="1150" width="340" height="62" rx="12" fill="#f4faf6" stroke="#2e7d4f" stroke-width="2"/>
-<text x="300.0" y="1176.0" font-size="13.5" font-weight="700" fill="#1b2b24" text-anchor="middle">data/*.json.gz</text>
-<text x="300.0" y="1195.5" font-size="13.5" font-weight="400" fill="#1b2b24" text-anchor="middle">agregados · ~1,3 MB cada</text>
+<text x="300.0" y="1176.0" font-size="13.5" font-weight="700" fill="#1b2b24" text-anchor="middle">data/*.json.gz · meta.json</text>
+<text x="300.0" y="1195.5" font-size="13.5" font-weight="400" fill="#1b2b24" text-anchor="middle">agregados: 1,3–1,5 MB cada (~4 MB)</text>
 <rect x="530" y="1150" width="340" height="62" rx="12" fill="#f4faf6" stroke="#2e7d4f" stroke-width="2"/>
 <text x="700.0" y="1176.0" font-size="13.5" font-weight="700" fill="#1b2b24" text-anchor="middle">logs/atualizacoes.csv</text>
 <text x="700.0" y="1195.5" font-size="13.5" font-weight="400" fill="#1b2b24" text-anchor="middle">auditoria: 1 linha por execução</text>
@@ -90,8 +93,9 @@
 <rect x="14" y="1260" width="1372" height="220" rx="16" fill="#dff0e6" opacity=".55"/>
 <text transform="translate(40 1370.0) rotate(-90)" font-size="15" font-weight="800" letter-spacing="2" fill="#14573a" text-anchor="middle">VERCEL</text>
 <rect x="130" y="1300" width="330" height="76" rx="12" fill="#ffffff" stroke="#000000" stroke-width="2"/>
-<text x="295.0" y="1332.8" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">Deploy automático</text>
-<text x="295.0" y="1353.8" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">disparado pelo push · ~1 min</text>
+<text x="295.0" y="1322.2" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">Deploy automático</text>
+<text x="295.0" y="1343.2" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">a cada push · ~1 min</text>
+<text x="295.0" y="1364.2" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">(mesmo sem dados novos)</text>
 <path d="M295,1240 L295,1300" fill="none" stroke="#000000" stroke-width="2.4" marker-end="url(#ah)"/>
 <rect x="234.0" y="1258" width="122.0" height="22" rx="6" fill="#f4faf6" stroke="#000000" stroke-width="1"/>
 <text x="295" y="1274.4" font-size="12.5" font-weight="600" fill="#14573a" text-anchor="middle">webhook de push</text>
@@ -102,11 +106,11 @@
 <text x="740.0" y="1394.9" font-size="14" font-weight="400" fill="#1b2b24" text-anchor="middle">brasil-uf.json · logos · capa</text>
 <rect x="990" y="1290" width="370" height="140" rx="12" fill="#ffffff" stroke="#1f6b46" stroke-width="2"/>
 <text x="1175.0" y="1334.9" font-size="14" font-weight="700" fill="#1b2b24" text-anchor="middle">api/dados.py (função Python)</text>
-<text x="1175.0" y="1354.9" font-size="14" font-weight="400" fill="#1b2b24" text-anchor="middle">lê data/*.json.gz (só stdlib)</text>
-<text x="1175.0" y="1374.9" font-size="14" font-weight="400" fill="#1b2b24" text-anchor="middle">filtra, calcula KPIs e rankings</text>
-<text x="1175.0" y="1394.9" font-size="14" font-weight="400" fill="#1b2b24" text-anchor="middle">Cache-Control: s-maxage=3600</text>
+<text x="1175.0" y="1354.9" font-size="14" font-weight="400" fill="#1b2b24" text-anchor="middle">lê data/*.json.gz e meta.json (só stdlib)</text>
+<text x="1175.0" y="1374.9" font-size="14" font-weight="400" fill="#1b2b24" text-anchor="middle">filtra · calcula KPIs, rankings, tooltips</text>
+<text x="1175.0" y="1394.9" font-size="14" font-weight="400" fill="#1b2b24" text-anchor="middle">cache de borda: s-maxage 1 h</text>
 <path d="M460,1338 L560,1338" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
-<path d="M295,1376 L295,1452 L1175,1452 L1175,1430" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
+<path d="M295,1376 L295,1452 L1050,1452 L1050,1430" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
 <rect x="14" y="1500" width="1372" height="200" rx="16" fill="#e6f1ea" opacity=".55"/>
 <text transform="translate(40 1600.0) rotate(-90)" font-size="15" font-weight="800" letter-spacing="2" fill="#14573a" text-anchor="middle">USUÁRIO</text>
 <rect x="130" y="1530" width="560" height="130" rx="12" fill="#ffffff" stroke="#1f6b46" stroke-width="2"/>
@@ -125,7 +129,7 @@
 <path d="M690,1580 L930,1580" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
 <rect x="770.6" y="1550" width="78.8" height="22" rx="6" fill="#f4faf6" stroke="#2e7d4f" stroke-width="1"/>
 <text x="810" y="1566.4" font-size="12.5" font-weight="600" fill="#14573a" text-anchor="middle">renderiza</text>
-<path d="M1300,1530 L1300,1485 L1330,1485 L1330,1430" fill="none" stroke="#14573a" stroke-width="2.4" marker-end="url(#ah)" marker-start="url(#ahs)"/>
-<rect x="1010" y="1472" width="270" height="20" rx="6" fill="#f4faf6" stroke="#14573a"/>
-<text x="1145" y="1486.0" font-size="11.5" font-weight="600" fill="#14573a" text-anchor="middle">GET /api/dados?ano&amp;mes&amp;…  →  JSON</text>
+<path d="M1250,1430 L1250,1530" fill="none" stroke="#14573a" stroke-width="2.4" marker-end="url(#ah)" marker-start="url(#ahs)"/>
+<rect x="1160.2" y="1468" width="179.6" height="22" rx="6" fill="#f4faf6" stroke="#14573a" stroke-width="1"/>
+<text x="1250" y="1484.4" font-size="12.5" font-weight="600" fill="#14573a" text-anchor="middle">GET /api/dados  ⇄  JSON</text>
 </svg>

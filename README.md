@@ -26,7 +26,7 @@ atualizado automaticamente nos dias de publicação da Anatel, com versão próp
 ## 📌 Sobre o projeto
 
 A Anatel publica, como dados abertos, uma base com **uma linha por reclamação** de consumidores de telecomunicações
-(mais de 12 milhões de registros desde nov/2019, um arquivo ZIP de ~2,4 GB). O arquivo é grande demais para abrir em
+(mais de 12 milhões de registros desde nov/2019, um arquivo ZIP de ~100 MB que vira um CSV de ~2,3 GB). O arquivo é grande demais para abrir em
 planilha e, no Power BI, exigiria baixar e atualizar tudo manualmente.
 
 Este projeto automatiza o caminho inteiro, do arquivo bruto até a decisão:
@@ -83,14 +83,15 @@ mapa por estado e análise de serviços e assuntos, com *tooltips* detalhados.
 
 <sub>Cinco camadas: **gatilhos** → **GitHub Actions** (ETL) → **repositório** → **Vercel** → **usuário**. Os caminhos tracejados em vermelho mostram o que acontece quando o ETL falha: o log é gravado, mas os dados não são commitados.</sub>
 
-**1. Verificação.** O workflow baixa o arquivo e compara o `sha256` com o da última execução. Se for igual, apenas registra
-uma linha no log e encerra. A Anatel publica a base em dias ímpares do mês, por isso a verificação segue esse calendário.
+**1. Verificação.** O `scripts/etl.py` baixa o ZIP e compara o `sha256` (e a versão do ETL) com os guardados em
+`data/meta.json`. Se forem iguais, apenas registra `sem_novidades` no log e encerra. A Anatel publica a base em dias ímpares do mês, por isso a verificação segue esse calendário.
 
-**2. ETL.** `scripts/etl.py` lê o CSV direto do ZIP com DuckDB e produz agregados (mês × serviço × prestadora × UF ou assunto
+**2. ETL.** O `scripts/etl.py` extrai o CSV do ZIP, lê com DuckDB e produz agregados (mês × serviço × prestadora × UF ou assunto
 ou dia) com somas e contagens, em arquivos JSON compactados. O resultado é determinístico: o mesmo dado gera os mesmos bytes.
 
-**3. Publicação.** O workflow faz *commit* dos agregados e do log. O push dispara o *deploy* da Vercel, e o painel já sai
-com os dados novos.
+**3. Publicação.** O workflow faz *commit* do log e dos dados (a execução sempre atualiza `verificacao.json`, então todo run
+gera um commit). O push dispara o *deploy* da Vercel, e o painel já sai com os dados novos. Se o ETL falhar, só o log é
+commitado.
 
 **4. Consulta.** A função `api/dados.py` (Python puro, sem dependências) recebe os filtros, recalcula indicadores, rankings e
 tooltips a partir dos agregados e devolve um único JSON. O front-end desenha tudo com Chart.js.
