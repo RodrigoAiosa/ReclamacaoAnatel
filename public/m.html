@@ -83,7 +83,7 @@ button{font:inherit;cursor:pointer}
 .sheet .al{width:42px;height:5px;border-radius:3px;background:#cfdcd4;margin:2px auto 10px}
 .sheet h3{margin:4px 0 2px;font-size:18px;color:var(--verde2)}.sheet .s{font-size:12.5px;color:var(--mut);margin-bottom:10px}
 .kv{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #edf3ef;font-size:14px}.kv b{white-space:nowrap}
-.dr{display:grid;grid-template-columns:104px 1fr 38px 56px;gap:6px;align-items:center;font-size:12px;margin:5px 0}.dr .b{height:8px;background:#edf3ef;border-radius:4px;overflow:hidden}.dr .b i{display:block;height:100%}.dr em{font-style:normal;color:var(--mut);text-align:right;font-size:11px}
+.dr{display:grid;grid-template-columns:104px 1fr 48px 56px;gap:6px;align-items:center;font-size:12px;margin:5px 0}.dr .b{height:8px;background:#edf3ef;border-radius:4px;overflow:hidden}.dr .b i{display:block;height:100%}.dr em{font-style:normal;color:var(--mut);text-align:right;font-size:11px}
 .btn{width:100%;border:0;border-radius:14px;padding:13px;font-weight:700;font-size:15px;margin-top:12px;background:var(--verde);color:#fff}.btn.sec{background:#fff;color:var(--verde);border:1.5px solid var(--verde)}
 .fl label{display:block;font-weight:700;color:var(--verde2);font-size:13px;margin:12px 0 5px}
 /* sobre */
@@ -178,8 +178,8 @@ const kv = (k, v, c) => `<div class="kv"><span>${c ? `<i style="display:inline-b
 function painelSat(s, extra = "") {
   const cls = s.saldo >= 0 ? "pos" : "neg";
   return `<div class="sat4"><div><span>Nota média</span><b>${num(s.nota, 2)}</b></div><div><span>Saldo (p.p.)</span><b class="${cls}">${s.saldo == null ? "–" : (s.saldo > 0 ? "+" : "") + num(s.saldo, 1)}</b></div>
-    <div><span>Satisfeitos</span><b class="pos">${pc(s.satisfeitos, 0)}</b></div><div><span>Insatisfeitos</span><b class="neg">${pc(s.insatisfeitos, 0)}</b></div></div>` +
-    s.dist.map(d => `<div class="dr"><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${COR[d.label]};margin-right:5px"></i>${d.label}</span><div class="b"><i style="width:${d.pct}%;background:${COR[d.label]}"></i></div><b>${num(d.pct, 0)}%</b><em>${num(d.n)}</em></div>`).join("") + extra;
+    <div><span>Satisfeitos</span><b class="pos">${pc(s.satisfeitos)}</b></div><div><span>Insatisfeitos</span><b class="neg">${pc(s.insatisfeitos)}</b></div></div>` +
+    s.dist.map(d => `<div class="dr"><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${COR[d.label]};margin-right:5px"></i>${d.label}</span><div class="b"><i style="width:${d.pct}%;background:${COR[d.label]}"></i></div><b>${num(d.pct, 1)}%</b><em>${num(d.n)}</em></div>`).join("") + extra;
 }
 const tagNivel = s => `<span class="tag" style="background:${COR_NIVEL[s.nivel]}22;color:${s.nivel === "Sem dados" ? "#555" : COR_NIVEL[s.nivel]}">${s.nivel}</span>`;
 function sheetSat(titulo, s, sub, extra) {
@@ -320,7 +320,7 @@ function renderOperadora() {
   const O = D.operadoras, ok = O.filter(o => o.total >= 1000), por = (arr, f, dir) => arr.slice().sort((a, b) => dir * (f(a) - f(b)))[0], cards = [];
   if (O.length) {
     const l = O[0]; cards.push(["Maior volume", l.nome, `<b>${num(l.total)}</b> reclamações`, "#2e7d4f"]);
-    const sn = por(ok.filter(o => o.sat.nota != null && o.sat.avaliacoes >= 500), o => o.sat.nota, -1); if (sn) cards.push(["Melhor nota média", sn.nome, `nota <b>${num(sn.sat.nota, 2)}</b> · ${pc(sn.sat.satisfeitos, 0)} satisfeitos`, "#1f7bff"]);
+    const sn = por(ok.filter(o => o.sat.nota != null && o.sat.avaliacoes >= 500), o => o.sat.nota, -1); if (sn) cards.push(["Melhor nota média", sn.nome, `nota <b>${num(sn.sat.nota, 2)}</b> · ${pc(sn.sat.satisfeitos)} satisfeitos`, "#1f7bff"]);
     const tm = por(ok.filter(o => o.tmr != null), o => o.tmr, 1); if (tm) cards.push(["Resposta mais rápida", tm.nome, `TMR de <b>${num(tm.tmr, 1)}</b> dias`, "#8e6bbf"]);
     const rb = por(ok.filter(o => o.pct_reabertas != null), o => o.pct_reabertas, -1); if (rb) cards.push(["Mais reabertas", rb.nome, `<b>${pc(rb.pct_reabertas)}</b> das respondidas`, "#e0382d"]);
   }
@@ -339,7 +339,7 @@ function renderOperadora() {
   $("gNotas").innerHTML = unica
     ? `<div class="nt" style="cursor:default"><h3>${esc(unica.nome)}${tagNivel(unica.sat)}</h3><div class="s">${num(unica.sat.avaliacoes)} avaliações · ${num(unica.total)} reclamações</div>${painelSat(unica.sat, `<div class="kv"><span>Categoria predominante</span><b>${unica.sat.predominante}</b></div>`)}</div>`
     : lista.map((o, i) => `<button class="nt" data-i="${i}"><h3>${esc(o.nome)}${tagNivel(o.sat)}</h3><div class="s">${num(o.sat.avaliacoes)} avaliações · nota média ${num(o.sat.nota, 2)}</div>` +
-      o.sat.dist.map(d => `<div class="dr"><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${COR[d.label]};margin-right:5px"></i>${d.label}</span><div class="b"><i style="width:${d.pct}%;background:${COR[d.label]}"></i></div><b>${num(d.pct, 0)}%</b><em>${num(d.n)}</em></div>`).join("") + `</button>`).join("") || `<div class="nota">Sem avaliações no filtro atual.</div>`;
+      o.sat.dist.map(d => `<div class="dr"><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${COR[d.label]};margin-right:5px"></i>${d.label}</span><div class="b"><i style="width:${d.pct}%;background:${COR[d.label]}"></i></div><b>${num(d.pct, 1)}%</b><em>${num(d.n)}</em></div>`).join("") + `</button>`).join("") || `<div class="nota">Sem avaliações no filtro atual.</div>`;
   $("gNotas").onclick = e => { const b = e.target.closest("button.nt"); if (b) sheetOp(lista[+b.dataset.i]); };
   $("lOp").innerHTML = O.map((o, i) => `<button class="li" data-i="${i}"><div class="h"><b>${esc(o.nome)}${tagNivel(o.sat)}</b><span>${num(o.total)}</span></div>
     <div class="g"><div><b>${pc(o.pct_respondidas, 0)}</b>respondidas</div><div><b>${pc(o.pct_resolvidas, 0)}</b>resolvidas</div><div><b>${num(o.tmr, 1)}</b>TMR dias</div><div><b>${num(o.sat.nota, 2)}</b>nota</div></div></button>`).join("");

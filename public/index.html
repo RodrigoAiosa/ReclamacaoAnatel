@@ -44,11 +44,11 @@ main{min-width:0}
 .cab{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:10px}.cab .sub{margin:0}
 .selin{font-size:12px;color:var(--mut);display:flex;align-items:center;gap:8px}.selin select{font:inherit;font-size:13px;padding:7px 10px;border:1.5px solid var(--linha);border-radius:10px;background:#fff;color:var(--ink);min-width:230px}
 .notas{grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}
-.nt .dr{grid-template-columns:104px 1fr 40px 50px;font-size:12.5px;margin:6px 0}.nt .dr .b{height:9px}.nt h3{font-size:15.5px}.nt .s{font-size:11.5px;margin-bottom:8px}
+.nt .dr{grid-template-columns:104px 1fr 48px 50px;font-size:12.5px;margin:6px 0}.nt .dr .b{height:9px}.nt h3{font-size:15.5px}.nt .s{font-size:11.5px;margin-bottom:8px}
 .nt.grande{grid-column:1/-1;padding:18px 22px;background:#fff}.nt.grande h3{font-size:22px}.nt.grande .s{font-size:13px;margin-bottom:12px}
 .nt.grande .ns{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}.nt.grande .ns div{border:1px solid var(--linha);border-radius:12px;padding:10px 14px}
 .nt.grande .ns span{display:block;font-size:12px;color:var(--mut)}.nt.grande .ns b{font-size:30px;display:block;line-height:1.15}.nt.grande .ns i{font-style:normal;font-size:11px;color:var(--mut)}
-.nt.grande .dr{grid-template-columns:150px 1fr 54px 76px;font-size:16px;margin:12px 0}.nt.grande .dr .b{height:20px;border-radius:10px}.nt.grande .dr .b i{border-radius:10px}.nt.grande .dr em{font-size:13px}
+.nt.grande .dr{grid-template-columns:150px 1fr 64px 76px;font-size:16px;margin:12px 0}.nt.grande .dr .b{height:20px;border-radius:10px}.nt.grande .dr .b i{border-radius:10px}.nt.grande .dr em{font-size:13px}
 .nt.grande .rod2{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px;padding-top:12px;border-top:1px solid var(--linha);font-size:11px;color:var(--mut)}.nt.grande .rod2 b{display:block;font-size:16px;color:var(--ink);margin-top:2px}
 @media(max-width:900px){.nt.grande .ns{grid-template-columns:1fr 1fr}.nt.grande .rod2{grid-template-columns:1fr}}
 
@@ -114,7 +114,7 @@ tbody tr:hover{background:#e9f3ed}
 #tip .cols b{font-size:17px;display:block}
 #tip .cols i{font-size:9px;color:var(--mut);font-style:normal}
 #tip h4{font-size:9px;letter-spacing:.4px;color:#667;margin:8px 0 5px;text-transform:uppercase}
-.dr{display:grid;grid-template-columns:92px 1fr 34px 46px;gap:6px;align-items:center;margin:3px 0;font-size:11px}
+.dr{display:grid;grid-template-columns:92px 1fr 46px 46px;gap:6px;align-items:center;margin:3px 0;font-size:11px}
 .dr .b{height:5px;background:#ececec;border-radius:3px}.dr .b i{display:block;height:100%;border-radius:3px}
 .dr em{font-style:normal;color:#999;text-align:right;font-size:10px}
 .rod{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid #eee;margin:8px -14px -4px;padding:8px 14px 0;font-size:10px;color:var(--mut)}
@@ -386,14 +386,14 @@ function tipSatisfacao(titulo, s, extra = "") {
   return `<h3>${titulo}<span class="tag">${s.nivel}</span></h3>
     <div class="s">${num(s.avaliacoes)} avaliações no período${extra}</div>
     <div class="cols"><div><span>Nota média</span><b>${num(s.nota, 1)}</b><i>de 5,0</i></div>
-      <div><span>Satisfeitos</span><b class="pos">${pc(s.satisfeitos, 0)}</b><i>Satisf. + Muito satisf.</i></div>
-      <div><span>Insatisfeitos</span><b class="neg">${pc(s.insatisfeitos, 0)}</b><i>Insat. + Muito insat.</i></div>
+      <div><span>Satisfeitos</span><b class="pos">${pc(s.satisfeitos)}</b><i>Satisf. + Muito satisf.</i></div>
+      <div><span>Insatisfeitos</span><b class="neg">${pc(s.insatisfeitos)}</b><i>Insat. + Muito insat.</i></div>
       <div><span>Saldo</span><b class="${cls}">${s.saldo == null ? "–" : (s.saldo > 0 ? "+" : "") + num(s.saldo, 1)}</b><i>pontos percentuais</i></div></div>
     <h4>Distribuição por categoria</h4>
     ${s.dist.map(d => `<div class="dr"><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${COR[d.label]};margin-right:5px"></i>${d.label}</span>
-      <div class="b"><i style="width:${d.pct}%;background:${COR[d.label]}"></i></div><b>${num(d.pct, 0).padStart(2, "0")}%</b><em>${num(d.n)}</em></div>`).join("")}
+      <div class="b"><i style="width:${d.pct}%;background:${COR[d.label]}"></i></div><b>${num(d.pct, 1)}%</b><em>${num(d.n)}</em></div>`).join("")}
     <div class="rod"><div>NÍVEL DE SATISFAÇÃO<b>${s.nivel}</b></div><div>CATEGORIA PREDOMINANTE<b>${s.predominante}</b></div>
-      <div>POSITIVOS VS NEGATIVOS<b><span class="pos">${pc(s.satisfeitos, 0)}</span> <span class="neg">${pc(s.insatisfeitos, 0)}</span></b></div></div>`;
+      <div>POSITIVOS VS NEGATIVOS<b><span class="pos">${pc(s.satisfeitos)}</span> <span class="neg">${pc(s.insatisfeitos)}</span></b></div></div>`;
 }
 function tipServicos(titulo, servicos, total) {
   return `<h3>📊 ${titulo}</h3><div class="s" style="margin-top:6px">${num(total)} reclamações</div>` +
@@ -706,16 +706,16 @@ function renderOperadora() {
   const B = O.filter(o => o.sat.avaliacoes), sel = $("selNotas"), atual = sel.value;
   sel.innerHTML = `<option value="">10 maiores operadoras</option>` + B.map(o => `<option value="${o.nome}">${o.nome}</option>`).join("");
   sel.value = B.some(o => o.nome === atual) ? atual : "";
-  const linhas = o => o.sat.dist.map(d => `<div class="dr"><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${COR[d.label]};margin-right:6px"></i>${d.label}</span><div class="b"><i style="width:${d.pct}%;background:${COR[d.label]}"></i></div><b>${num(d.pct, 0).padStart(2, "0")}%</b><em>${num(d.n)}</em></div>`).join("");
+  const linhas = o => o.sat.dist.map(d => `<div class="dr"><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${COR[d.label]};margin-right:6px"></i>${d.label}</span><div class="b"><i style="width:${d.pct}%;background:${COR[d.label]}"></i></div><b>${num(d.pct, 1)}%</b><em>${num(d.n)}</em></div>`).join("");
   const unica = B.find(o => o.nome === sel.value);
   if (unica) {
     const t = unica.sat, cls = t.saldo >= 0 ? "pos" : "neg";
     $("subNotas").textContent = "% de avaliações por categoria de nota";
     $("gNotas").innerHTML = `<div class="nt grande"><h3>${unica.nome}<span class="tag">${t.nivel}</span></h3><div class="s">${num(t.avaliacoes)} avaliações no período · ${num(unica.total)} reclamações</div>
-      <div class="ns"><div><span>Nota média</span><b>${num(t.nota, 1)}</b><i>de 5,0</i></div><div><span>Satisfeitos</span><b class="pos">${pc(t.satisfeitos, 0)}</b><i>Satisf. + Muito satisf.</i></div>
-        <div><span>Insatisfeitos</span><b class="neg">${pc(t.insatisfeitos, 0)}</b><i>Insat. + Muito insat.</i></div><div><span>Saldo</span><b class="${cls}">${t.saldo == null ? "–" : (t.saldo > 0 ? "+" : "") + num(t.saldo, 1)}</b><i>pontos percentuais</i></div></div>
+      <div class="ns"><div><span>Nota média</span><b>${num(t.nota, 1)}</b><i>de 5,0</i></div><div><span>Satisfeitos</span><b class="pos">${pc(t.satisfeitos)}</b><i>Satisf. + Muito satisf.</i></div>
+        <div><span>Insatisfeitos</span><b class="neg">${pc(t.insatisfeitos)}</b><i>Insat. + Muito insat.</i></div><div><span>Saldo</span><b class="${cls}">${t.saldo == null ? "–" : (t.saldo > 0 ? "+" : "") + num(t.saldo, 1)}</b><i>pontos percentuais</i></div></div>
       ${linhas(unica)}
-      <div class="rod2"><div>NÍVEL DE SATISFAÇÃO<b>${t.nivel}</b></div><div>CATEGORIA PREDOMINANTE<b>${t.predominante}</b></div><div>POSITIVOS VS NEGATIVOS<b><span class="pos">${pc(t.satisfeitos, 0)}</span> <span class="neg">${pc(t.insatisfeitos, 0)}</span></b></div></div></div>`;
+      <div class="rod2"><div>NÍVEL DE SATISFAÇÃO<b>${t.nivel}</b></div><div>CATEGORIA PREDOMINANTE<b>${t.predominante}</b></div><div>POSITIVOS VS NEGATIVOS<b><span class="pos">${pc(t.satisfeitos)}</span> <span class="neg">${pc(t.insatisfeitos)}</span></b></div></div></div>`;
   } else {
     $("gNotas").innerHTML = B.slice(0, 10).map(o => `<div class="nt"><h3>${o.nome}<span class="tag">${o.sat.nivel}</span></h3><div class="s">${num(o.sat.avaliacoes)} avaliações · nota média ${num(o.sat.nota, 2)}</div>${linhas(o)}</div>`).join("") || `<div class="nota">Sem avaliações no filtro atual.</div>`;
   }
@@ -749,7 +749,7 @@ function render() {
   $("tUf").innerHTML = `<thead><tr><th>UF</th><th>Reclamações</th><th>% respondidas</th><th>% resolvidas</th><th>TMR</th><th>Nota</th></tr></thead><tbody>` +
     D.regional.map((r, i) => `<tr data-i="${i}"><td>${r.nome}</td><td>${num(r.total)}</td><td>${pc(r.pct_respondidas)}</td><td>${pc(r.pct_resolvidas)}</td><td>${num(r.tmr, 1)}</td><td>${num(r.sat.nota, 2)}</td></tr>`).join("") + "</tbody>";
   $("tOp").innerHTML = `<thead><tr><th>Operadora</th><th>Reclamações</th><th>% respondidas</th><th>% resolvidas</th><th>TMR (dias)</th><th>Nota média</th><th>Satisfeitos</th><th>Insatisfeitos</th></tr></thead><tbody>` +
-    D.operadoras.map((r, i) => `<tr data-i="${i}"><td>${r.nome}</td><td>${num(r.total)}</td><td>${pc(r.pct_respondidas)}</td><td>${pc(r.pct_resolvidas)}</td><td>${num(r.tmr, 1)}</td><td>${num(r.sat.nota, 2)}</td><td class="pos">${pc(r.sat.satisfeitos, 0)}</td><td class="neg">${pc(r.sat.insatisfeitos, 0)}</td></tr>`).join("") + "</tbody>";
+    D.operadoras.map((r, i) => `<tr data-i="${i}"><td>${r.nome}</td><td>${num(r.total)}</td><td>${pc(r.pct_respondidas)}</td><td>${pc(r.pct_resolvidas)}</td><td>${num(r.tmr, 1)}</td><td>${num(r.sat.nota, 2)}</td><td class="pos">${pc(r.sat.satisfeitos)}</td><td class="neg">${pc(r.sat.insatisfeitos)}</td></tr>`).join("") + "</tbody>";
 
   renderServicos(); renderOperadora();
   const m = D.meta;

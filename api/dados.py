@@ -75,9 +75,20 @@ def sat(v):
     else:
         nivel = "Bom"
     pred = max(NOTAS, key=lambda x: n[x[0]])[1] if tot else "–"
+    # Percentuais exibidos com 1 casa e somando exatamente 100,0 (maior resto); satisfeitos/insatisfeitos/saldo
+    # saem da soma dos valores exibidos, para o total sempre bater com as barras (ex.: 61,5 + 8,9 = 70,4).
+    pct = {k: 0.0 for k in n}
+    if tot:
+        base = {k: int(1000 * n[k] / tot) for k in n}
+        resto = sorted(n, key=lambda k: -(1000 * n[k] / tot - base[k]))
+        for k in resto[: 1000 - sum(base.values())]:
+            base[k] += 1
+        pct = {k: base[k] / 10 for k in n}
+        pos, neg = round(pct[4] + pct[5], 1), round(pct[1] + pct[2], 1)
+        saldo = round(pos - neg, 1)
     return {"avaliacoes": int(tot), "nota": _div(v[7], v[6]), "satisfeitos": pos, "insatisfeitos": neg,
             "saldo": saldo, "nivel": nivel, "predominante": pred,
-            "dist": [{"nota": k, "label": lb, "n": int(n[k]), "pct": _div(n[k], tot, 100, 1) or 0} for k, lb in NOTAS]}
+            "dist": [{"nota": k, "label": lb, "n": int(n[k]), "pct": pct[k]} for k, lb in NOTAS]}
 
 
 def resumo(v):
