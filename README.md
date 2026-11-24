@@ -77,18 +77,11 @@ mapa por estado e análise de serviços e assuntos, com *tooltips* detalhados.
 
 ## 🧭 Como funciona
 
-```mermaid
-flowchart LR
-    A[("Anatel<br/>ZIP ~2,4 GB<br/>12 mi de linhas")] -->|download diário| B["GitHub Actions<br/>cron 03:43 BRT"]
-    B -->|sha256 mudou?| C{"Novidade?"}
-    C -->|não| L[("logs/atualizacoes.csv")]
-    C -->|sim| D["scripts/etl.py<br/>DuckDB · ~25 s"]
-    D --> E[("data/*.json.gz<br/>agregados ~4 MB")]
-    D --> L
-    E -->|commit do bot| F["Vercel<br/>novo deploy ~1 min"]
-    F --> G["api/dados.py<br/>Python serverless"]
-    G --> H["Dashboard<br/>public/index.html e m.html"]
-```
+<p align="center">
+  <img src="docs/img/fluxo.svg" alt="Fluxo completo do projeto: gatilhos, GitHub Actions, repositório, Vercel e usuário" width="100%">
+</p>
+
+<sub>Cinco camadas: **gatilhos** → **GitHub Actions** (ETL) → **repositório** → **Vercel** → **usuário**. Os caminhos tracejados em vermelho mostram o que acontece quando o ETL falha: o log é gravado, mas os dados não são commitados.</sub>
 
 **1. Verificação.** O workflow baixa o arquivo e compara o `sha256` com o da última execução. Se for igual, apenas registra
 uma linha no log e encerra. A Anatel costuma atualizar a base a cada ~2 dias.
