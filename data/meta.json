@@ -1,14 +1,14 @@
 {
-  "atualizado_em": "2026-11-23T12:58:58+00:00",
+  "atualizado_em": "2026-11-24T13:02:30+00:00",
   "ultima_data_abertura": "2026-11-21",
   "origem": "https://www.anatel.gov.br/dadosabertos/paineis_de_dados/consumidor/indicadores_qualidade_atendimento.zip",
-  "sha256": "7c04ffb0f97e5ed98536c178a7f674e11641a9cc7e06cec225873b984a35eea6",
-  "registros_origem": 12195507,
+  "sha256": "e710149e849de347bfa7d25cf35bb2f2090a362b7e7606f0cdd5cd07a5ee21b1",
+  "registros_origem": 12198740,
   "periodo": [
     "2019-11",
     "2026-11"
   ],
-  "linhas_agregadas": 375529,
+  "linhas_agregadas": 375687,
   "versao": 3,
   "medidas": [
     "dem",
