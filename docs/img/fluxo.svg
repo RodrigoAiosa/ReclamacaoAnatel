@@ -34,22 +34,22 @@
 <text x="1010" y="349.4" font-size="12.5" font-weight="600" fill="#14573a" text-anchor="middle">download</text>
 <path d="M700,394 L700,438" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
 <polygon points="700,440 940,505 700,570 460,505" fill="#ffffff" stroke="#1f6b46" stroke-width="2"/>
-<text x="700" y="489.9" font-size="14" font-weight="700" fill="#1b2b24" text-anchor="middle">3 · Dados novos?</text>
-<text x="700" y="509.9" font-size="14" font-weight="400" fill="#1b2b24" text-anchor="middle">sha256 do ZIP e versão do ETL</text>
-<text x="700" y="529.9" font-size="14" font-weight="400" fill="#1b2b24" text-anchor="middle">iguais à última execução?</text>
+<text x="700" y="489.9" font-size="14" font-weight="700" fill="#1b2b24" text-anchor="middle">3 · Arquivo igual ao da</text>
+<text x="700" y="509.9" font-size="14" font-weight="700" fill="#1b2b24" text-anchor="middle">última execução?</text>
+<text x="700" y="529.9" font-size="14" font-weight="400" fill="#1b2b24" text-anchor="middle">mesmo sha256 e mesma versão do ETL</text>
 <path d="M460,505 L330,505" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
-<rect x="377.2" y="475" width="35.6" height="22" rx="6" fill="#f4faf6" stroke="#2e7d4f" stroke-width="1"/>
-<text x="395" y="491.4" font-size="12.5" font-weight="600" fill="#14573a" text-anchor="middle">sim</text>
-<rect x="100" y="450" width="230" height="110" rx="12" fill="#eef6f1" stroke="#1f6b46" stroke-width="2"/>
-<text x="215.0" y="480.5" font-size="13.5" font-weight="700" fill="#1b2b24" text-anchor="middle">Sem novidades</text>
-<text x="215.0" y="500.0" font-size="13.5" font-weight="400" fill="#1b2b24" text-anchor="middle">grava verificacao.json</text>
-<text x="215.0" y="519.5" font-size="13.5" font-weight="400" fill="#1b2b24" text-anchor="middle">(dados_novos = false)</text>
-<text x="215.0" y="539.0" font-size="13.5" font-weight="400" fill="#1b2b24" text-anchor="middle">status = sem_novidades</text>
+<rect x="348.4" y="475" width="93.2" height="22" rx="6" fill="#f4faf6" stroke="#2e7d4f" stroke-width="1"/>
+<text x="395" y="491.4" font-size="12.5" font-weight="600" fill="#14573a" text-anchor="middle">sim (igual)</text>
+<rect x="80" y="440" width="250" height="130" rx="12" fill="#eef6f1" stroke="#1f6b46" stroke-width="2"/>
+<text x="205.0" y="481.1" font-size="13" font-weight="700" fill="#1b2b24" text-anchor="middle">Igual: sem novidades</text>
+<text x="205.0" y="500.1" font-size="13" font-weight="400" fill="#1b2b24" text-anchor="middle">não reprocessa</text>
+<text x="205.0" y="519.0" font-size="13" font-weight="400" fill="#1b2b24" text-anchor="middle">verificacao.json: dados_novos = false</text>
+<text x="205.0" y="538.0" font-size="13" font-weight="400" fill="#1b2b24" text-anchor="middle">log: status = sem_novidades</text>
 <path d="M700,570 L700,612" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
-<rect x="706.2" y="580" width="35.6" height="22" rx="6" fill="#f4faf6" stroke="#2e7d4f" stroke-width="1"/>
-<text x="724" y="596.4" font-size="12.5" font-weight="600" fill="#14573a" text-anchor="middle">não</text>
+<rect x="689.0" y="580" width="122.0" height="22" rx="6" fill="#f4faf6" stroke="#2e7d4f" stroke-width="1"/>
+<text x="750" y="596.4" font-size="12.5" font-weight="600" fill="#14573a" text-anchor="middle">não (diferente)</text>
 <rect x="400" y="614" width="600" height="96" rx="12" fill="#ffffff" stroke="#1f6b46" stroke-width="2"/>
-<text x="700.0" y="646.2" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">4 · Extrair o CSV e agregar com DuckDB (~25 s)</text>
+<text x="700.0" y="646.2" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">4 · Dados novos: extrair o CSV e agregar com DuckDB (~25 s)</text>
 <text x="700.0" y="667.2" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">mês × serviço × prestadora × UF | assunto | dia</text>
 <text x="700.0" y="688.2" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">demandas, respostas, resolvidas, reabertas, notas 1–5, prazo</text>
 <path d="M700,710 L700,748" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
@@ -66,7 +66,7 @@
 <rect x="400" y="854" width="600" height="60" rx="12" fill="#ffffff" stroke="#1f6b46" stroke-width="2"/>
 <text x="700.0" y="878.8" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">6 · Registrar em logs/atualizacoes.csv</text>
 <text x="700.0" y="899.8" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">status · gatilho · sha256 · run_id · linhas · duração</text>
-<path d="M215,560 L215,884 L400,884" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
+<path d="M205,570 L205,884 L400,884" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
 <path d="M1210,702 L1210,884 L1000,884" fill="none" stroke="#c0392b" stroke-width="2.4" stroke-dasharray="7 5" marker-end="url(#ah)"/>
 <path d="M700,914 L700,960" fill="none" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#ah)"/>
 <rect x="340" y="960" width="720" height="56" rx="12" fill="#ffffff" stroke="#1f6b46" stroke-width="2"/>
