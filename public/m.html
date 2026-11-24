@@ -107,7 +107,7 @@ code{background:#eef5f0;border-radius:5px;padding:1px 6px;font-size:12.5px}.vd{d
   <section class="view on" id="v_geral">
     <div class="kpis" id="kpis"></div>
     <div class="dica">Toque em um cartão para ver o que o indicador significa</div>
-    <div class="card"><h2>Satisfação do Cliente</h2><div class="sub" id="satSub"></div><div id="satBox"></div></div>
+    <div class="card"><h2>Satisfação do Cliente</h2><div class="sub" id="satSub"></div><select class="sel" id="selSat"></select><div id="satBox"></div></div>
     <div class="card"><h2>Reclamações por Operadora</h2><div class="sub">As 5 maiores — toque para ver a satisfação</div><div class="bl" id="blOp"></div></div>
     <div class="card"><h2>Assunto da Reclamação</h2><div class="sub">Mais frequentes <span id="aviAss"></span> — toque para ver os serviços</div><div class="bl" id="blAss"></div></div>
     <div class="card"><h2>Variação por Mês</h2><div class="sub">Número de reclamações por mês — toque no gráfico para ver o mês</div><div class="carr"><canvas id="cMes"></canvas></div></div>
@@ -255,7 +255,11 @@ function renderGeral() {
   $("kpis").innerHTML = KPIS.map(([t, ic, d, f, ex]) => `<div class="flip"><div class="fi"><div class="face"><div class="t">${t}<span>${ic}</span></div><div class="v">${f(k)}</div></div>
     <div class="face verso"><b class="vt">${t}</b><span>${d} ${ex ? `<b>${ex(k)}</b>` : ""}</span></div></div></div>`).join("");
   $("kpis").onclick = e => { const f = e.target.closest(".flip"); if (f) f.classList.toggle("vira"); };
-  const s = D.sat; $("satSub").textContent = `Total de avaliações: ${num(s.avaliacoes)}`;
+  const sl = $("selSat"), atual = sl.value, top = D.operadoras.slice(0, 10).filter(o => o.sat.avaliacoes);
+  sl.innerHTML = `<option value="">Todas as operadoras</option>` + top.map(o => `<option value="${esc(o.nome)}">${esc(o.nome)}</option>`).join("");
+  sl.value = top.some(o => o.nome === atual) ? atual : "";
+  const op = top.find(o => o.nome === sl.value), s = op ? op.sat : D.sat;
+  $("satSub").textContent = `${op ? op.nome + " · " : ""}Total de avaliações: ${num(s.avaliacoes)}`;
   $("satBox").innerHTML = `<div class="sat4"><div><span>⭐ Nota média</span><b>${num(s.nota, 2)}</b><span>de 5</span></div><div><span>Saldo</span><b class="azl">${s.saldo == null ? "–" : num(s.saldo, 1)}</b><span>p.p. · ${tagNivel(s)}</span></div>
     <div><span>Satisfeitos</span><b class="pos">${pc(s.satisfeitos)}</b></div><div><span>Insatisfeitos</span><b class="neg">${pc(s.insatisfeitos)}</b></div></div>
     <div class="emo">${s.dist.slice().reverse().map(d => `<div><span class="e">${EMO[d.label]}</span><span>${d.label}</span><b>${num(d.n)}</b><em>${num(d.pct, 1)}%</em></div>`).join("")}</div>`;
@@ -307,6 +311,7 @@ function renderRegional() {
   $("lUf").onclick = e => { const b = e.target.closest(".li"); if (b) { const r = lista[+b.dataset.i]; return sheetUf(r.nome, r); } if (e.target.id === "bMais") { verTodasUf = !verTodasUf; renderRegional(); } };
 }
 $("mMet").onchange = desenharMapa;
+$("selSat").onchange = () => D && renderGeral();
 $("selNotas").onchange = () => D && renderOperadora();
 fetch("brasil-uf.json").then(r => r.json()).then(g => { GEO = g; if (D) desenharMapa(); }).catch(() => {});
 

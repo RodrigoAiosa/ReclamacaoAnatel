@@ -236,7 +236,8 @@ footer{font-size:11px;color:#4f6c5e;margin:10px 4px 0;text-align:center}
       <div class="pane on" id="p_geral">
         <div class="g g2">
           <div class="card"><h2>Número de Reclamações por Operadora</h2><div class="sub">Top 5 empresas de telecomunicações objeto da reclamação</div><div class="cv"><canvas id="cOp"></canvas></div></div>
-          <div class="card"><h2>Índice de Satisfação do Cliente</h2><div class="sub">Nota do consumidor e avaliação ao atendimento prestado</div>
+          <div class="card"><h2>Índice de Satisfação do Cliente</h2><div class="cab"><div class="sub">Nota do consumidor e avaliação ao atendimento prestado</div>
+              <label class="selin">Mostrar <select id="selSat"></select></label></div>
             <div class="sat" id="sat"></div></div>
         </div>
         <div class="g g2">
@@ -476,6 +477,7 @@ function desenharMapa() {
 }
 $("mMet").addEventListener("change", desenharMapa);
 $("selNotas").addEventListener("change", () => D && renderOperadora());
+$("selSat").addEventListener("change", () => D && painelSatisfacao(D.sat));
 
 
 /* ---------- aba Serviços e Assuntos ---------- */
@@ -657,9 +659,14 @@ async function abrirMetodologia() {
   catch (e) { $("aviso").style.display = "block"; $("aviso").textContent = "Falha ao carregar a Metodologia: " + e.message; }
 }
 /* ---------- renderização ---------- */
-function painelSatisfacao(s) {
+function painelSatisfacao(geral) {
+  /* "Todas as operadoras" (padrão) ou uma das 10 maiores no filtro atual */
+  const sel = $("selSat"), atual = sel.value, top = D.operadoras.slice(0, 10).filter(o => o.sat.avaliacoes);
+  sel.innerHTML = `<option value="">Todas as operadoras</option>` + top.map(o => `<option value="${o.nome}">${o.nome}</option>`).join("");
+  sel.value = top.some(o => o.nome === atual) ? atual : "";
+  const op = top.find(o => o.nome === sel.value), s = op ? op.sat : geral;
   const d = Object.fromEntries(s.dist.map(x => [x.nota, x]));
-  $("sat").innerHTML = `<div class="tt">⭐ Satisfação dos Clientes<small>Total de avaliações: ${num(s.avaliacoes)}</small></div>
+  $("sat").innerHTML = `<div class="tt">⭐ Satisfação dos Clientes${op ? " — " + op.nome : ""}<small>Total de avaliações: ${num(s.avaliacoes)}${op ? " · " + num(op.total) + " reclamações" : ""}</small></div>
     <div class="mini"><div><span>⭐ Nota Média</span><b>${num(s.nota, 2)}</b><i>de 5</i></div>
       <div><span>🙂 Satisfeitos</span><b class="pos">${pc(s.satisfeitos)}</b></div>
       <div><span>😟 Insatisfeitos</span><b class="neg">${pc(s.insatisfeitos)}</b></div>
