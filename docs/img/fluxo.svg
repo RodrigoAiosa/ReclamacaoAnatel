@@ -5,11 +5,11 @@
 <rect x="14" y="60" width="1372" height="130" rx="16" fill="#e6f1ea" opacity=".55"/>
 <text transform="translate(40 125.0) rotate(-90)" font-size="15" font-weight="800" letter-spacing="2" fill="#14573a" text-anchor="middle">GATILHOS</text>
 <rect x="130" y="90" width="360" height="70" rx="12" fill="#ffffff" stroke="#1f6b46" stroke-width="2"/>
-<text x="310.0" y="119.8" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">⏰ Agendamento diário</text>
-<text x="310.0" y="140.8" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">cron 43 6 * * * · 03:43 (Brasília)</text>
+<text x="310.0" y="119.8" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">⏰ Agendador externo (cron-job.org)</text>
+<text x="310.0" y="140.8" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">dias ímpares · 03:43 (Brasília)</text>
 <rect x="520" y="90" width="360" height="70" rx="12" fill="#ffffff" stroke="#1f6b46" stroke-width="2"/>
 <text x="700.0" y="119.8" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">▶ Execução manual</text>
-<text x="700.0" y="140.8" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">workflow_dispatch</text>
+<text x="700.0" y="140.8" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">Run workflow no GitHub</text>
 <rect x="910" y="90" width="360" height="70" rx="12" fill="#ffffff" stroke="#1f6b46" stroke-width="2"/>
 <text x="1090.0" y="119.8" font-size="15" font-weight="700" fill="#1b2b24" text-anchor="middle">⬆ Push em scripts/etl.py</text>
 <text x="1090.0" y="140.8" font-size="15" font-weight="400" fill="#1b2b24" text-anchor="middle">ou no arquivo do workflow</text>

@@ -3,7 +3,7 @@
 # 📡 Reclamações Anatel — Dashboard de Qualidade de Atendimento
 
 **Painel interativo dos Indicadores de Qualidade de Atendimento do Anatel Consumidor (telecom),
-atualizado sozinho todos os dias, com versão própria para celular.**
+atualizado automaticamente nos dias de publicação da Anatel, com versão própria para celular.**
 
 [![Painel online](https://img.shields.io/badge/painel-online-1f6b46?style=for-the-badge&logo=vercel&logoColor=white)](https://reclamacaoanatel.vercel.app)
 [![Versão celular](https://img.shields.io/badge/vers%C3%A3o-celular-2e7d4f?style=for-the-badge&logo=android&logoColor=white)](https://reclamacaoanatel.vercel.app/m.html)
@@ -195,11 +195,17 @@ com `npx vercel dev`.
    robô poder fazer *commit* dos dados.
 4. (Opcional) Para apontar para outra URL de origem, crie a variável `DATA_URL` em **Settings → Secrets and variables →
    Actions → Variables**. Sem ela, vale o link oficial da Anatel definido no workflow.
-5. Rode o workflow **Atualizar dados (verificação diária)** uma vez, em *Run workflow*, para conferir. Depois disso, ele
-   roda sozinho nos dias ímpares do mês, às 06:43 UTC.
+5. Rode o workflow **Atualizar dados (verificação diária)** uma vez, em *Run workflow*, para conferir.
+6. Para a rotina automática, agende um disparo externo (por exemplo, no [cron-job.org](https://cron-job.org)) que chame o
+   `workflow_dispatch` nos dias ímpares do mês, às 03:43 (Brasília):
+   - **URL:** `https://api.github.com/repos/SEU_USUARIO/SEU_REPO/actions/workflows/atualizar-dados.yml/dispatches`
+   - **Método e corpo:** `POST` com `{"ref":"main"}`
+   - **Cabeçalhos:** `Accept: application/vnd.github+json`, `X-GitHub-Api-Version: 2022-11-28`,
+     `Content-Type: application/json` e `Authorization: Bearer SEU_TOKEN`
+   - **Token:** *fine-grained* com acesso só a este repositório e a permissão **Actions: Read and write**.
 
-> O agendamento do GitHub Actions pode atrasar ou pular execuções em horários de pico. Como cada execução fica no log, é
-> fácil conferir pela coluna `gatilho = schedule`.
+> O workflow não usa o agendador nativo do GitHub Actions, porque ele pode atrasar ou pular execuções em repositórios
+> com pouca atividade. Cada execução fica no log, e a coluna `gatilho` mostra como ela começou.
 
 ## 🔌 API
 

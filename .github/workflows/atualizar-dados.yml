@@ -1,8 +1,8 @@
 name: Atualizar dados (verificação diária)
 
 on:
-  schedule:
-    - cron: "43 6 1-31/2 * *"   # dias ímpares do mês (1, 3, 5…) às 06:43 UTC (03:43 em Brasília), seguindo a publicação da Anatel; se o arquivo não mudou, só registra no log
+  # Disparo diário (dias ímpares, 03:43 Brasília) feito pelo cron-job.org via workflow_dispatch;
+  # se o arquivo da Anatel não mudou, a execução só registra no log.
   workflow_dispatch:
   push:
     paths: [".github/workflows/atualizar-dados.yml", "scripts/etl.py"]
