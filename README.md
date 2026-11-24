@@ -50,7 +50,7 @@ mapa por estado e análise de serviços e assuntos, com *tooltips* detalhados.
 | 📖 **Metodologia** | Glossário, fórmulas com exemplo calculado na hora, níveis de satisfação, fonte e limitações, tudo dentro do painel. |
 | 📱 **Versão celular** | Interface própria (`/m`): navegação inferior, filtros em folha, toque no lugar do mouse. Celulares são levados a ela automaticamente. |
 | 🔎 **Filtros** | Ano, mês (só os meses que existem nos dados), serviço, operadora (atalhos Claro, Vivo e TIM) e UF. |
-| 🔄 **Atualização diária** | Verificação às 03:43 (Brasília). Só reprocessa se o arquivo da Anatel mudou. |
+| 🔄 **Atualização automática** | Verificação nos dias ímpares do mês, às 03:43 (Brasília), seguindo a rotina de publicação da Anatel. Só reprocessa se o arquivo mudou. |
 
 <details>
 <summary><b>Ver mais telas</b></summary>
@@ -84,7 +84,7 @@ mapa por estado e análise de serviços e assuntos, com *tooltips* detalhados.
 <sub>Cinco camadas: **gatilhos** → **GitHub Actions** (ETL) → **repositório** → **Vercel** → **usuário**. Os caminhos tracejados em vermelho mostram o que acontece quando o ETL falha: o log é gravado, mas os dados não são commitados.</sub>
 
 **1. Verificação.** O workflow baixa o arquivo e compara o `sha256` com o da última execução. Se for igual, apenas registra
-uma linha no log e encerra. A Anatel costuma atualizar a base a cada ~2 dias.
+uma linha no log e encerra. A Anatel publica a base em dias ímpares do mês, por isso a verificação segue esse calendário.
 
 **2. ETL.** `scripts/etl.py` lê o CSV direto do ZIP com DuckDB e produz agregados (mês × serviço × prestadora × UF ou assunto
 ou dia) com somas e contagens, em arquivos JSON compactados. O resultado é determinístico: o mesmo dado gera os mesmos bytes.
@@ -196,7 +196,7 @@ com `npx vercel dev`.
 4. (Opcional) Para apontar para outra URL de origem, crie a variável `DATA_URL` em **Settings → Secrets and variables →
    Actions → Variables**. Sem ela, vale o link oficial da Anatel definido no workflow.
 5. Rode o workflow **Atualizar dados (verificação diária)** uma vez, em *Run workflow*, para conferir. Depois disso, ele
-   roda sozinho todo dia às 06:43 UTC.
+   roda sozinho nos dias ímpares do mês, às 06:43 UTC.
 
 > O agendamento do GitHub Actions pode atrasar ou pular execuções em horários de pico. Como cada execução fica no log, é
 > fácil conferir pela coluna `gatilho = schedule`.
